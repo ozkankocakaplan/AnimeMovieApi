@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>5d4674f1-f53e-4854-80af-e0dab3af4386</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.9" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Microsoft.AspNetCore.Authentication.JwtBearer" />
+    <None Remove="Controllers\" />
+    <None Remove="Microsoft.AspNetCore.SignalR" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Controllers\" />
+    <Folder Include="wwwroot\" />
+    <Folder Include="wwwroot\user\" />
+    <Folder Include="wwwroot\anime\" />
+    <Folder Include="wwwroot\manga\" />
+    <Folder Include="wwwroot\fanart\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AnimeMovie.Entites\AnimeMovie.Entites.csproj">
+      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+    </ProjectReference>
+    <ProjectReference Include="..\AnimeMovie.DataAccess\AnimeMovie.DataAccess.csproj">
+      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+    </ProjectReference>
+    <ProjectReference Include="..\AnimeMovie.Business\AnimeMovie.Business.csproj">
+      <GlobalPropertiesToRemove></GlobalPropertiesToRemove>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Remove="wwwroot\" />
+    <Content Remove="wwwroot\user\" />
+    <Content Remove="wwwroot\anime\" />
+    <Content Remove="wwwroot\manga\" />
+    <Content Remove="wwwroot\fanart\" />
+  </ItemGroup>
+</Project>

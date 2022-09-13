@@ -1,0 +1,19 @@
+{
+  "Version": 1,
+  "Hash": "UU8b42FN70L2BtxFUoyxgK1xJVUt3YNaTJSqbtF7Gas=",
+  "Source": "AnimeMovie.API",
+  "BasePath": "_content/AnimeMovie.API",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [
+    {
+      "Name": "AnimeMovie.API/wwwroot",
+      "Source": "AnimeMovie.API",
+      "ContentRoot": "/Users/ozkan/Projects/AnimeMovie/AnimeMovie.API/wwwroot/",
+      "BasePath": "_content/AnimeMovie.API",
+      "Pattern": "**"
+    }
+  ],
+  "Assets": []
+}

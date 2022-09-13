@@ -1,0 +1,12 @@
+/Users/ozkan/Projects/AnimeMovie/AnimeMovie.Entites/bin/Debug/net6.0/AnimeMovie.Entites.deps.json
+/Users/ozkan/Projects/AnimeMovie/AnimeMovie.Entites/bin/Debug/net6.0/AnimeMovie.Entites.dll
+/Users/ozkan/Projects/AnimeMovie/AnimeMovie.Entites/bin/Debug/net6.0/AnimeMovie.Entites.pdb
+/Users/ozkan/Projects/AnimeMovie/AnimeMovie.Entites/obj/Debug/net6.0/AnimeMovie.Entites.csproj.AssemblyReference.cache
+/Users/ozkan/Projects/AnimeMovie/AnimeMovie.Entites/obj/Debug/net6.0/AnimeMovie.Entites.GeneratedMSBuildEditorConfig.editorconfig
+/Users/ozkan/Projects/AnimeMovie/AnimeMovie.Entites/obj/Debug/net6.0/AnimeMovie.Entites.AssemblyInfoInputs.cache
+/Users/ozkan/Projects/AnimeMovie/AnimeMovie.Entites/obj/Debug/net6.0/AnimeMovie.Entites.AssemblyInfo.cs
+/Users/ozkan/Projects/AnimeMovie/AnimeMovie.Entites/obj/Debug/net6.0/AnimeMovie.Entites.csproj.CoreCompileInputs.cache
+/Users/ozkan/Projects/AnimeMovie/AnimeMovie.Entites/obj/Debug/net6.0/AnimeMovie.Entites.dll
+/Users/ozkan/Projects/AnimeMovie/AnimeMovie.Entites/obj/Debug/net6.0/refint/AnimeMovie.Entites.dll
+/Users/ozkan/Projects/AnimeMovie/AnimeMovie.Entites/obj/Debug/net6.0/AnimeMovie.Entites.pdb
+/Users/ozkan/Projects/AnimeMovie/AnimeMovie.Entites/obj/Debug/net6.0/ref/AnimeMovie.Entites.dll
