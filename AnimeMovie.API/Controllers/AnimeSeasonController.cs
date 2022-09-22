@@ -180,10 +180,10 @@ namespace AnimeMovie.API.Controllers
             return Ok(response);
         }
         [HttpGet]
-        [Route("/getAnimeEpisodesBySeasonID/{id}")]
+        [Route("/getAnimeEpisodesByID/{id}")]
         public IActionResult getAnimeEpisodesByID(int id)
         {
-            var response = animeEpisodesService.getList(x => x.ID == id);
+            var response = animeEpisodesService.get(x => x.ID == id);
             return Ok(response);
         }
         [HttpDelete]

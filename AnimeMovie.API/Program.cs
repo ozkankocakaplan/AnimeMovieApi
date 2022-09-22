@@ -9,9 +9,14 @@ using AnimeMovie.DataAccess.Abstract;
 using AnimeMovie.DataAccess.Concrete;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.WebHost.UseUrls("http://192.168.2.175:37323");
+
+
+
 
 // Add services to the container.
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -149,6 +154,8 @@ builder.Services.AddScoped<IUsersService, UsersManager>();
 builder.Services.AddScoped<ISocialMediaAccountRepository, SocialMediaAccountRepository>();
 builder.Services.AddScoped<ISocialMediaAccountService, SocialMediaAccountManager>();
 
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -159,7 +166,14 @@ if (app.Environment.IsDevelopment())
 }
 DataSeeding.Seed(app);
 app.UseHttpsRedirection();
-
+app.UseCors(builder =>
+{
+    builder.WithOrigins("http://localhost:3000")
+    .AllowAnyHeader()
+    .AllowAnyMethod()
+    .AllowCredentials();
+});
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapHub<UserHub>("/userHub");
 app.MapControllers();

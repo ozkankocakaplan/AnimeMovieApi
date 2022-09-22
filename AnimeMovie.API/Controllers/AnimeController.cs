@@ -75,6 +75,14 @@ namespace AnimeMovie.API.Controllers
             return Ok(response);
         }
         [HttpGet]
+        [AllowAnonymous]
+        [Route("/getPaginatedAnime/{pageNo}/{showCount}")]
+        public IActionResult getPaginatedAnime(int pageNo = 1, int showCount = 10)
+        {
+            var response = animeService.getPaginatedAnime(pageNo, showCount);
+            return Ok(response);
+        }
+        [HttpGet]
         [Route("/getAnime/{animeUrl}")]
         public IActionResult getAnime(string animeUrl)
         {
@@ -90,7 +98,7 @@ namespace AnimeMovie.API.Controllers
             return Ok(response);
         }
         #endregion
-        
+
     }
 }
 

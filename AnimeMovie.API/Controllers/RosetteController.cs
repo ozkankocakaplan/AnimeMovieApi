@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using AnimeMovie.Business.Abstract;
 using AnimeMovie.Entites;
 using Microsoft.AspNetCore.Mvc;
+using Type = AnimeMovie.Entites.Type;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -14,12 +15,15 @@ namespace AnimeMovie.API.Controllers
     {
         private readonly IRosetteService rosetteService;
         private readonly IUserRosetteService userRosetteService;
+        private readonly IRosetteContentService rosetteContentService;
         private readonly IWebHostEnvironment webHostEnvironment;
-        public RosetteController(IRosetteService rosette, IUserRosetteService userRosette, IWebHostEnvironment webHost)
+        public RosetteController(IRosetteService rosette, IUserRosetteService userRosette, IWebHostEnvironment webHost,
+            IRosetteContentService rosetteContent)
         {
             rosetteService = rosette;
             userRosetteService = userRosette;
             webHostEnvironment = webHost;
+            rosetteContentService = rosetteContent;
         }
         #region Rosette
         [HttpPost]
@@ -155,6 +159,60 @@ namespace AnimeMovie.API.Controllers
         }
         #endregion
 
+        #region RosetteContent
+        [Route("/addRosetteContent")]
+        [HttpPost]
+        [Roles(Roles = RolesAttribute.AdminOrModerator)]
+        public IActionResult addRosetteContent([FromBody] List<RosetteContent> rosetteContents)
+        {
+            foreach (var item in rosetteContents)
+            {
+                var response = rosetteContentService.add(item);
+            }
+            return Ok();
+        }
+        [Route("/updateRosetteContent/{contentID}/{type}")]
+        [HttpPut]
+        [Roles(Roles = RolesAttribute.AdminOrModerator)]
+        public IActionResult updateRosetteContent([FromBody] List<RosetteContent> rosetteContents,  int contentID, int type)
+        {
+
+            if (rosetteContents.Count != 0)
+            {
+                var rosetteID = rosetteContents.Select(x => x.RosetteID).FirstOrDefault();
+                var _contents = rosetteContentService.getList(x => x.RosetteID == rosetteID);
+                var rosette = rosetteService.get(x => x.ID == rosetteID);
+                if (rosette.Entity != null)
+                {
+                    rosette.Entity.ContentID = contentID;
+                    rosette.Entity.Type = (Type)type;
+                }
+                if (_contents.Count != 0)
+                {
+                    foreach (var item in _contents.List)
+                    {
+                        rosetteContentService.delete(x => x.RosetteID == item.RosetteID);
+                    }
+                }
+                foreach (var item in rosetteContents)
+                {
+                    var response = rosetteContentService.add(item);
+                }
+                return Ok(rosetteContents);
+            }
+
+
+            return BadRequest();
+        }
+        [Route("/getRosetteContent/{rosetteID}")]
+        [HttpGet]
+        [Roles(Roles = RolesAttribute.AdminOrModerator)]
+        public IActionResult getRosetteContent(int rosetteID)
+        {
+            var response = rosetteContentService.getList(x => x.RosetteID == rosetteID);
+            return Ok(response);
+        }
+        #endregion
     }
 }
 

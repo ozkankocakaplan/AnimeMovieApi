@@ -39,7 +39,7 @@ namespace AnimeMovie.API.Controllers
             var response = homeSliderService.add(homeSlider);
             return Ok(response);
         }
-        [HttpPost]
+        [HttpPut]
         [Route("/updateHomeSlider")]
         [Roles(Roles = RolesAttribute.AdminOrModerator)]
         public IActionResult updateHomeSlider([FromForm] IFormFile img, HomeSlider homeSlider)
@@ -58,7 +58,7 @@ namespace AnimeMovie.API.Controllers
             var response = homeSliderService.add(homeSlider);
             return Ok(response);
         }
-        [HttpPost]
+        [HttpDelete]
         [Route("/deleteHomeSlider/{id}")]
         [Roles(Roles = RolesAttribute.AdminOrModerator)]
         public IActionResult deleteHomeSlider(int id)

@@ -51,6 +51,22 @@ namespace AnimeMovie.API.Controllers
         }
 
         #region Users
+        [Roles(Roles = RolesAttribute.AdminOrModerator)]
+        [Route("/getPaginatedUsers/{pageNo}/{showCount}")]
+        [HttpGet]
+        public IActionResult getUsers(int pageNo, int showCount)
+        {
+            var response = usersService.getPaginatedUsers(pageNo, showCount);
+            return Ok(response);
+        }
+        [AllowAnonymous]
+        [Route("/login/{userName}/{password}")]
+        [HttpPost]
+        public IActionResult login(string userName, string password)
+        {
+            var response = usersService.login(userName, password);
+            return Ok(response);
+        }
         [AllowAnonymous]
         [Route("/addUser")]
         [HttpPost]

@@ -13,7 +13,7 @@ namespace AnimeMovie.Entites
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int ID { get; set; }
-        public DateTime CreateTime { get; set; }
+        public DateTime CreateTime { get; set; } = DateTime.Now;
     }
 }
 

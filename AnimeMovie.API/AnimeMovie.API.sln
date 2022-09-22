@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 25.0.1704.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnimeMovie.API", "AnimeMovie.API.csproj", "{DFA25653-4E88-4D55-8E1A-491C36A41CB7}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DFA25653-4E88-4D55-8E1A-491C36A41CB7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DFA25653-4E88-4D55-8E1A-491C36A41CB7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DFA25653-4E88-4D55-8E1A-491C36A41CB7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DFA25653-4E88-4D55-8E1A-491C36A41CB7}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {AC1F57FC-96A0-429F-8966-3921563BC6CF}
+	EndGlobalSection
+EndGlobal

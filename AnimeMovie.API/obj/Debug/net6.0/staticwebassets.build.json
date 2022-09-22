@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "UU8b42FN70L2BtxFUoyxgK1xJVUt3YNaTJSqbtF7Gas=",
+  "Hash": "WZO3YieirHbwU7Ar3zU+hMjrpYeentt5mfcMnFOf/XM=",
   "Source": "AnimeMovie.API",
   "BasePath": "_content/AnimeMovie.API",
   "Mode": "Default",
@@ -15,5 +15,23 @@
       "Pattern": "**"
     }
   ],
-  "Assets": []
+  "Assets": [
+    {
+      "Identity": "/Users/ozkan/Projects/AnimeMovie/AnimeMovie.API/wwwroot/.DS_Store",
+      "SourceId": "AnimeMovie.API",
+      "SourceType": "Discovered",
+      "ContentRoot": "/Users/ozkan/Projects/AnimeMovie/AnimeMovie.API/wwwroot/",
+      "BasePath": "_content/AnimeMovie.API",
+      "RelativePath": ".DS_Store",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot/.DS_Store"
+    }
+  ]
 }

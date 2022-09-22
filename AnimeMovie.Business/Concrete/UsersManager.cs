@@ -7,6 +7,7 @@ using AnimeMovie.Business.Abstract;
 using AnimeMovie.Business.Helper;
 using AnimeMovie.Business.Models;
 using AnimeMovie.DataAccess.Abstract;
+using AnimeMovie.DataAccess.Concrete;
 using AnimeMovie.Entites;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.Extensions.Configuration;
@@ -110,12 +111,36 @@ namespace AnimeMovie.Business.Concrete
             return response;
         }
 
+        public ServiceResponse<Users> getPaginatedUsers(int pageNo, int ShowCount)
+        {
+            var response = new ServiceResponse<Users>();
+            try
+            {
+                var list = usersRepository.GetAll().ToList();
+                response.List = list.Skip((pageNo - 1) * ShowCount).Take(ShowCount).ToList();
+                int page = 0;
+                var totalUsers = list.Count();
+                if (totalUsers % ShowCount > 0)
+                {
+                    page++;
+                }
+                response.Count = page;
+                response.IsSuccessful = true;
+            }
+            catch (Exception ex)
+            {
+                response.HasExceptionError = true;
+                response.ExceptionMessage = ex.ToString();
+            }
+            return response;
+        }
+
         public ServiceResponse<UserModel> login(string userName, string password)
         {
             var response = new ServiceResponse<UserModel>();
             try
             {
-                var user = usersRepository.get(x => x.UserName == userName && x.Password == password);
+                var user = usersRepository.get(x => x.Email == userName && x.Password == password);
                 if (user != null)
                 {
                     if (!user.isBanned)
