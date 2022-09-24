@@ -1,35 +1,24 @@
 ﻿<Properties StartupConfiguration="{36613161-7983-4322-990B-F567FDAA2016}|Default">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore />
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
-  <MonoDevelop.Ide.ItemProperties.AnimeMovie.API PreferredExecutionTarget="/Applications/Safari.app" />
-  <MultiItemStartupConfigurations />
-  <MonoDevelop.Ide.Workbench ActiveDocument="AnimeMovie.API/Controllers/RosetteController.cs">
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MonoDevelop.Ide.Workbench ActiveDocument="AnimeMovie.Business/Concrete/MangaImageManager.cs">
     <Files>
-      <File FileName="AnimeMovie.Entites/Rosette.cs" Line="8" Column="43" />
-      <File FileName="AnimeMovie.DataAccess/Abstract/IRosetteContentRepository.cs" Line="6" Column="76" />
-      <File FileName="AnimeMovie.Business/Concrete/RosetteContentManager.cs" Line="99" Column="57" />
-      <File FileName="AnimeMovie.API/Controllers/RosetteController.cs" Line="177" Column="100" />
-      <File FileName="AnimeMovie.Entites/RosetteContent.cs" Line="8" Column="39" />
+      <File FileName="AnimeMovie.Business/Concrete/MangaImageService.cs" Line="21" Column="71" />
+      <File FileName="AnimeMovie.Business/Concrete/AnimeImageManager.cs" Line="22" Column="71" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
         <State name="__root__">
-          <Node name="AnimeMovie" expanded="True">
-            <Node name="AnimeMovie.API" expanded="True">
-              <Node name="Controllers" expanded="True" />
-            </Node>
-            <Node name="AnimeMovie.Business" expanded="True">
-              <Node name="Concrete" expanded="True">
-                <Node name="RosetteContentManager.cs" selected="True" />
-              </Node>
-            </Node>
-            <Node name="AnimeMovie.Entites" expanded="True" />
+          <Node name="AnimeMovie" expanded="True" selected="True">
+            <Node name="AnimeMovie.Business" expanded="True" />
           </Node>
         </State>
       </Pad>
     </Pads>
   </MonoDevelop.Ide.Workbench>
-  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.ItemProperties.AnimeMovie.API PreferredExecutionTarget="/Applications/Safari.app" />
+  <MultiItemStartupConfigurations />
 </Properties>

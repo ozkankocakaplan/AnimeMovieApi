@@ -19,6 +19,7 @@ namespace AnimeMovie.Business.Concrete
             var response = new ServiceResponse<UserEmailVertification>();
             try
             {
+                
                 response.Entity = userEmailVertificationRepository.Create(entity);
                 response.IsSuccessful = true;
             }

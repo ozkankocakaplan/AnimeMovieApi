@@ -6,8 +6,7 @@ namespace AnimeMovie.Entites
         public string? Img { get; set; }
         public string? AnimeName { get; set; }
         public string AnimeDescription { get; set; }
-        public double MalRating { get; set; }
-        public double SiteRating { get; set; }
+        public string MalRating { get; set; }
         public string AgeLimit { get; set; }
         public int SeasonCount { get; set; }
         public string ShowTime { get; set; }

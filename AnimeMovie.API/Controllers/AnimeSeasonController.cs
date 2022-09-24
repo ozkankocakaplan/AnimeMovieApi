@@ -59,6 +59,11 @@ namespace AnimeMovie.API.Controllers
         [Route("/deleteAnimeSeasons/{id}")]
         public IActionResult deleteAnimeSeasons(int id)
         {
+            var animeMusic = animeSeasonMusicService.getList(x => x.SeasonID == id).List;
+            foreach (var music in animeMusic)
+            {
+                animeSeasonMusicService.delete(x => x.ID == music.ID);
+            }
             var response = animeSeasonService.delete(x => x.ID == id);
             return Ok(response);
         }
@@ -101,37 +106,31 @@ namespace AnimeMovie.API.Controllers
         {
             if (seasonMusic.MusicName.Length != 0 && seasonMusic.ID != 0)
             {
-                var response = animeSeasonMusicService.add(seasonMusic);
+                var response = animeSeasonMusicService.update(seasonMusic);
                 return Ok(response);
             }
             return BadRequest();
         }
-        [HttpGet]
+        [HttpDelete]
         [Roles(Roles = RolesAttribute.AdminOrModerator)]
-        [Route("/getAnimeSeasonMusic/{seasonID}")]
-        public IActionResult getAnimeSeasonMusicByAnimeID(int seasonID)
+        [Route("/deleteAnimeSeasonMusic")]
+        public IActionResult deleteAnimeSeasonMusic([FromBody] List<int> seasonMusics)
+        {
+            foreach (var music in seasonMusics)
+            {
+                animeSeasonMusicService.delete(x => x.ID == music);
+            }
+
+            return Ok();
+        }
+        [HttpGet]
+        [Route("/getAnimeSeasonMusics/{seasonID}")]
+        public IActionResult getAnimeSeasonMusics(int seasonID)
         {
             var response = animeSeasonMusicService.getList(x => x.SeasonID == seasonID);
             return Ok(response);
         }
-        [HttpDelete]
-        [Roles(Roles = RolesAttribute.AdminOrModerator)]
-        [Route("/deleteAnimeSeasonMusic/{id}")]
-        public IActionResult deleteAnimeSeasonMusic(int id)
-        {
-            var response = animeSeasonMusicService.delete(x => x.ID == id);
-            return Ok(response);
-        }
         [HttpGet]
-        [Roles(Roles = RolesAttribute.AdminOrModerator)]
-        [Route("/getAnimeSeasonMusics")]
-        public IActionResult getAnimeSeasonMusics()
-        {
-            var response = animeSeasonMusicService.getList();
-            return Ok(response);
-        }
-        [HttpGet]
-        [Roles(Roles = RolesAttribute.AdminOrModerator)]
         [Route("/getAnimeSeasonMusic/{id}")]
         public IActionResult getAnimeSeasonMusic(int id)
         {
@@ -188,11 +187,20 @@ namespace AnimeMovie.API.Controllers
         }
         [HttpDelete]
         [Roles(Roles = RolesAttribute.AdminOrModerator)]
-        [Route("/deleteAnimeEpisode/{id}")]
-        public IActionResult deleteAnimeEpisode(int id)
+        [Route("/deleteAnimeEpisode")]
+        public IActionResult deleteAnimeEpisode([FromBody] List<int> animeEpisodes)
         {
-            var response = animeEpisodesService.getList(x => x.ID == id);
-            return Ok(response);
+            foreach (var animeEpisode in animeEpisodes)
+            {
+                var episodeList = episodesService.getList(x => x.EpisodeID == animeEpisode).List.ToList();
+                foreach (var episode in episodeList)
+                {
+                    episodesService.delete(x => x.ID == episode.ID);
+                }
+                animeEpisodesService.delete(x => x.ID == animeEpisode);
+            }
+
+            return Ok();
         }
         #endregion
 
@@ -216,10 +224,21 @@ namespace AnimeMovie.API.Controllers
         {
             if (episodes.EpisodeID != 0 && episodes.ID != 0)
             {
-                var response = episodesService.add(episodes);
+                var response = episodesService.update(episodes);
                 return Ok(response);
             }
             return BadRequest();
+        }
+        [HttpDelete]
+        [Route("/deleteEpisodes")]
+        [Roles(Roles = RolesAttribute.AdminOrModerator)]
+        public IActionResult deleteEpisodes([FromBody] List<int> episodes)
+        {
+            foreach (var episode in episodes)
+            {
+                episodesService.delete(x => x.ID == episode);
+            }
+            return Ok();
         }
         [HttpGet]
         [Route("/getEpisodeByID/{id}")]
@@ -229,12 +248,13 @@ namespace AnimeMovie.API.Controllers
             return Ok(response);
         }
         [HttpGet]
-        [Route("/getEpisodeByEpisodeID/{id}")]
+        [Route("/getEpisodeByEpisodeID/{episodeID}")]
         public IActionResult getEpisodeByEpisodeID(int episodeID)
         {
-            var response = episodesService.get(x => x.EpisodeID == episodeID);
+            var response = episodesService.getList(x => x.EpisodeID == episodeID);
             return Ok(response);
         }
+
         #endregion
     }
 }

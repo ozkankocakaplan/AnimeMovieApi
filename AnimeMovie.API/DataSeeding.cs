@@ -16,7 +16,7 @@ namespace AnimeMovie.API
                 context.SiteDescription.Add(new Entites.SiteDescription()
                 {
                     InstagramUrl = "#",
-                    DiscordUrl = "#",
+                    
                     YoutubeUrl = "#",
                     Keywords = "Anime,Manga",
                     Description = "Anime ve Manga Film Sitesi",

@@ -15,11 +15,14 @@ namespace AnimeMovie.API.Controllers
         private readonly IWebHostEnvironment webHostEnvironment;
         private readonly IAnimeService animeService;
         private readonly IAnimeRatingService animeRatingService;
-        public AnimeController(IWebHostEnvironment webHost, IAnimeService anime, IAnimeRatingService animeRating)
+        private readonly IAnimeSeasonService animeSeasonService;
+        public AnimeController(IWebHostEnvironment webHost,
+            IAnimeService anime, IAnimeRatingService animeRating, IAnimeSeasonService animeSeason)
         {
             webHostEnvironment = webHost;
             animeService = anime;
             animeRatingService = animeRating;
+            animeSeasonService = animeSeason;
         }
         #region Anime
 
@@ -40,6 +43,18 @@ namespace AnimeMovie.API.Controllers
                 }
             }
             var response = animeService.add(anime);
+            if (anime.SeasonCount != 0 && response.IsSuccessful)
+            {
+                for (int i = 1; i <= anime.SeasonCount; i++)
+                {
+                    animeSeasonService.add(new AnimeSeason()
+                    {
+                        AnimeID = response.Entity.ID,
+                        SeasonName = $"{i}.Sezon"
+                    });
+                }
+            }
+
             return Ok(response);
         }
         [HttpPut]
@@ -87,6 +102,13 @@ namespace AnimeMovie.API.Controllers
         public IActionResult getAnime(string animeUrl)
         {
             var response = animeService.get(x => x.SeoUrl == animeUrl);
+            return Ok(response);
+        }
+        [HttpGet]
+        [Route("/getAnimeByID/{animeID}")]
+        public IActionResult getAnimeByID(int animeID)
+        {
+            var response = animeService.get(x => x.ID == animeID);
             return Ok(response);
         }
         [HttpDelete]

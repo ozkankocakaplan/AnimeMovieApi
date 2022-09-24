@@ -154,7 +154,14 @@ builder.Services.AddScoped<IUsersService, UsersManager>();
 builder.Services.AddScoped<ISocialMediaAccountRepository, SocialMediaAccountRepository>();
 builder.Services.AddScoped<ISocialMediaAccountService, SocialMediaAccountManager>();
 
+builder.Services.AddScoped<ICategoryTypeRepository, CategoryTypeRepository>();
+builder.Services.AddScoped<ICategoryTypeService, CategoryTypeManager>();
 
+builder.Services.AddScoped<IAnimeImageRepository, AnimeImageRepository>();
+builder.Services.AddScoped<IAnimeImageService, AnimeImageManager>();
+
+builder.Services.AddScoped<IMangaImageRepository, MangaImageRepository>();
+builder.Services.AddScoped<IMangaImageService, MangaImageManager>();
 
 var app = builder.Build();
 

@@ -121,7 +121,7 @@ namespace AnimeMovie.API.Controllers
             }
             return BadRequest();
         }
-        [Roles(Roles = RolesAttribute.AdminOrModerator)]
+        [Roles(Roles = RolesAttribute.Admin)]
         [Route("/updateIsBanned/{userID}")]
         [HttpPut]
         public IActionResult updateIsBanned(int userID)

@@ -54,8 +54,9 @@ namespace AnimeMovie.DataAccess.Migrations
                     b.Property<int>("Like")
                         .HasColumnType("int");
 
-                    b.Property<double>("MalRating")
-                        .HasColumnType("float");
+                    b.Property<string>("MalRating")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("SeasonCount")
                         .HasColumnType("int");
@@ -67,9 +68,6 @@ namespace AnimeMovie.DataAccess.Migrations
                     b.Property<string>("ShowTime")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<double>("SiteRating")
-                        .HasColumnType("float");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -110,6 +108,29 @@ namespace AnimeMovie.DataAccess.Migrations
                     b.HasKey("ID");
 
                     b.ToTable("AnimeEpisodes");
+                });
+
+            modelBuilder.Entity("AnimeMovie.Entites.AnimeImages", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"), 1L, 1);
+
+                    b.Property<int>("AnimeID")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Img")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("ID");
+
+                    b.ToTable("AnimeImages");
                 });
 
             modelBuilder.Entity("AnimeMovie.Entites.AnimeList", b =>
@@ -315,6 +336,31 @@ namespace AnimeMovie.DataAccess.Migrations
                     b.ToTable("Categories");
                 });
 
+            modelBuilder.Entity("AnimeMovie.Entites.CategoryType", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"), 1L, 1);
+
+                    b.Property<int>("CategoryID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("ContentID")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.HasKey("ID");
+
+                    b.ToTable("CategoryTypes");
+                });
+
             modelBuilder.Entity("AnimeMovie.Entites.Comments", b =>
                 {
                     b.Property<int>("ID")
@@ -436,6 +482,9 @@ namespace AnimeMovie.DataAccess.Migrations
                     b.Property<int>("ComplaintType")
                         .HasColumnType("int");
 
+                    b.Property<int>("ContentID")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("CreateTime")
                         .HasColumnType("datetime2");
 
@@ -444,6 +493,9 @@ namespace AnimeMovie.DataAccess.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("UserID")
+                        .HasColumnType("int");
+
+                    b.Property<int>("type")
                         .HasColumnType("int");
 
                     b.HasKey("ID");
@@ -674,6 +726,29 @@ namespace AnimeMovie.DataAccess.Migrations
                     b.ToTable("MangaEpisodes");
                 });
 
+            modelBuilder.Entity("AnimeMovie.Entites.MangaImages", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"), 1L, 1);
+
+                    b.Property<DateTime>("CreateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Img")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("MangaID")
+                        .HasColumnType("int");
+
+                    b.HasKey("ID");
+
+                    b.ToTable("MangaImages");
+                });
+
             modelBuilder.Entity("AnimeMovie.Entites.MangaList", b =>
                 {
                     b.Property<int>("ID")
@@ -762,6 +837,9 @@ namespace AnimeMovie.DataAccess.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"), 1L, 1);
 
+                    b.Property<int>("ContentID")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("CreateTime")
                         .HasColumnType("datetime2");
 
@@ -772,6 +850,9 @@ namespace AnimeMovie.DataAccess.Migrations
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
 
                     b.HasKey("ID");
 
@@ -790,10 +871,6 @@ namespace AnimeMovie.DataAccess.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("DiscordUrl")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 

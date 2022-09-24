@@ -7,7 +7,7 @@ namespace AnimeMovie.Entites
         public string Description { get; set; }
         public string InstagramUrl { get; set; }
         public string YoutubeUrl { get; set; }
-        public string DiscordUrl { get; set; }
+       
     }
 }
 

@@ -1,0 +1,17 @@
+/Users/ozkan/Projects/AnimeMovie/AnimeMovie.Business/bin/Release/net6.0/AnimeMovie.Business.deps.json
+/Users/ozkan/Projects/AnimeMovie/AnimeMovie.Business/bin/Release/net6.0/AnimeMovie.Business.dll
+/Users/ozkan/Projects/AnimeMovie/AnimeMovie.Business/bin/Release/net6.0/AnimeMovie.Business.pdb
+/Users/ozkan/Projects/AnimeMovie/AnimeMovie.Business/bin/Release/net6.0/AnimeMovie.DataAccess.dll
+/Users/ozkan/Projects/AnimeMovie/AnimeMovie.Business/bin/Release/net6.0/AnimeMovie.Entites.dll
+/Users/ozkan/Projects/AnimeMovie/AnimeMovie.Business/bin/Release/net6.0/AnimeMovie.Entites.pdb
+/Users/ozkan/Projects/AnimeMovie/AnimeMovie.Business/bin/Release/net6.0/AnimeMovie.DataAccess.pdb
+/Users/ozkan/Projects/AnimeMovie/AnimeMovie.Business/obj/Release/net6.0/AnimeMovie.Business.csproj.AssemblyReference.cache
+/Users/ozkan/Projects/AnimeMovie/AnimeMovie.Business/obj/Release/net6.0/AnimeMovie.Business.GeneratedMSBuildEditorConfig.editorconfig
+/Users/ozkan/Projects/AnimeMovie/AnimeMovie.Business/obj/Release/net6.0/AnimeMovie.Business.AssemblyInfoInputs.cache
+/Users/ozkan/Projects/AnimeMovie/AnimeMovie.Business/obj/Release/net6.0/AnimeMovie.Business.AssemblyInfo.cs
+/Users/ozkan/Projects/AnimeMovie/AnimeMovie.Business/obj/Release/net6.0/AnimeMovie.Business.csproj.CoreCompileInputs.cache
+/Users/ozkan/Projects/AnimeMovie/AnimeMovie.Business/obj/Release/net6.0/AnimeMovie.Business.csproj.CopyComplete
+/Users/ozkan/Projects/AnimeMovie/AnimeMovie.Business/obj/Release/net6.0/AnimeMovie.Business.dll
+/Users/ozkan/Projects/AnimeMovie/AnimeMovie.Business/obj/Release/net6.0/refint/AnimeMovie.Business.dll
+/Users/ozkan/Projects/AnimeMovie/AnimeMovie.Business/obj/Release/net6.0/AnimeMovie.Business.pdb
+/Users/ozkan/Projects/AnimeMovie/AnimeMovie.Business/obj/Release/net6.0/ref/AnimeMovie.Business.dll

@@ -6,6 +6,7 @@ using AnimeMovie.Business.Abstract;
 using AnimeMovie.Entites;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Type = AnimeMovie.Entites.Type;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -15,10 +16,13 @@ namespace AnimeMovie.API.Controllers
     public class CategoriesController : Controller
     {
         private readonly ICategoriesService categoriesService;
-        public CategoriesController(ICategoriesService categories)
+        private readonly ICategoryTypeService categoryTypeService;
+        public CategoriesController(ICategoriesService categories, ICategoryTypeService categoryType)
         {
             categoriesService = categories;
+            categoryTypeService = categoryType;
         }
+        #region Category
         [HttpPost]
         [Roles(Roles = RolesAttribute.AdminOrModerator)]
         [Route("/addCategory")]
@@ -77,6 +81,54 @@ namespace AnimeMovie.API.Controllers
             var response = categoriesService.getList();
             return Ok(response);
         }
+        #endregion
+
+        #region CategoryType
+        [HttpPost]
+        [Roles(Roles = RolesAttribute.AdminOrModerator)]
+        [Route("/addCategoryType")]
+        public IActionResult addCategoryType([FromBody] List<CategoryType> categories)
+        {
+            foreach (var category in categories)
+            {
+                var response = categoryTypeService.add(category);
+            }
+            return Ok();
+        }
+        [HttpPost]
+        [Roles(Roles = RolesAttribute.AdminOrModerator)]
+        [Route("/updateCategoryType/{contentID}")]
+        public IActionResult updateCategoryType([FromBody] List<CategoryType> categories, int contentID)
+        {
+            var list = categoryTypeService.getList(x => x.ContentID == contentID);
+            if (list.Count != 0)
+            {
+                foreach (var item in list.List)
+                {
+                    var check = categories.Where(x => x.ID == item.ID);
+                    if (check == null)
+                    {
+                        categoryTypeService.delete(x => x.ID == item.ID);
+                    }
+                }
+            }
+            return Ok();
+        }
+        [HttpGet]
+        [Route("/getCategoryType/{contentID}/{type}")]
+        public IActionResult getCategoryType(int contentID, int type)
+        {
+            var response = categoryTypeService.getList(x => x.ContentID == contentID && x.Type == (Type)type);
+            return Ok(response);
+        }
+        [HttpGet]
+        [Route("/getCategoryTypes")]
+        public IActionResult getCategoryTypes()
+        {
+            var response = categoryTypeService.getList();
+            return Ok(response);
+        }
+        #endregion
     }
 }
 
