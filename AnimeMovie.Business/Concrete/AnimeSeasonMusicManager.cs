@@ -84,7 +84,7 @@ namespace AnimeMovie.Business.Concrete
             var response = new ServiceResponse<AnimeSeasonMusic>();
             try
             {
-                var list = animeSeasonMusicRepository.Table.Where(expression).ToList();
+                var list = animeSeasonMusicRepository.TableNoTracking.Where(expression).ToList();
                 response.List = list;
                 response.Count = list.Count();
                 response.IsSuccessful = true;

@@ -84,7 +84,7 @@ namespace AnimeMovie.Business.Concrete
             var response = new ServiceResponse<Announcement>();
             try
             {
-                var list = announcementRepository.Table.Where(expression).ToList();
+                var list = announcementRepository.TableNoTracking.Where(expression).ToList();
                 response.List = list;
                 response.Count = list.Count();
                 response.IsSuccessful = true;

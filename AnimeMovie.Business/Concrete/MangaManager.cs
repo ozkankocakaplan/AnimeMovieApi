@@ -91,7 +91,7 @@ namespace AnimeMovie.Business.Concrete
             var response = new ServiceResponse<Manga>();
             try
             {
-                var list = mangaRepository.Table.Where(expression).ToList();
+                var list = mangaRepository.TableNoTracking.Where(expression).ToList();
                 response.List = list;
                 response.Count = list.Count;
                 response.IsSuccessful = true;

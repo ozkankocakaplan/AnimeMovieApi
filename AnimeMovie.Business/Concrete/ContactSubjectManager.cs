@@ -68,7 +68,7 @@ namespace AnimeMovie.Business.Concrete
             var response = new ServiceResponse<ContactSubject>();
             try
             {
-                response.List = contactSubjectRepository.GetAll().ToList();
+                response.List = contactSubjectRepository.TableNoTracking.ToList();
                 response.Count = contactSubjectRepository.Count();
                 response.IsSuccessful = true;
             }

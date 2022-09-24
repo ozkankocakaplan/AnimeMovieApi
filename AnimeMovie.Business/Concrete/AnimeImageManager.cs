@@ -83,7 +83,7 @@ namespace AnimeMovie.Business.Concrete
             var response = new ServiceResponse<AnimeImages>();
             try
             {
-                var list = animeImageRepository.Table.Where(expression).ToList();
+                var list = animeImageRepository.TableNoTracking.Where(expression).ToList();
                 response.List = list;
                 response.Count = list.Count;
                 response.IsSuccessful = true;

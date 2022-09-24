@@ -83,7 +83,7 @@ namespace AnimeMovie.Business.Concrete
             var response = new ServiceResponse<UserLoginHistory>();
             try
             {
-                var list = userLoginHistoryRepository.Table.Where(expression).ToList();
+                var list = userLoginHistoryRepository.TableNoTracking.Where(expression).ToList();
                 response.List = list;
                 response.Count = list.Count;
                 response.IsSuccessful = true;

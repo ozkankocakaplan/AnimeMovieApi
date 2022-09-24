@@ -82,7 +82,7 @@ namespace AnimeMovie.Business.Concrete
             var response = new ServiceResponse<Like>();
             try
             {
-                var list = likeRepository.Table.Where(expression).ToList();
+                var list = likeRepository.TableNoTracking.Where(expression).ToList();
                 response.List = list;
                 response.Count = list.Count;
                 response.IsSuccessful = true;

@@ -85,7 +85,7 @@ namespace AnimeMovie.Business.Concrete
             var response = new ServiceResponse<AnimeEpisodes>();
             try
             {
-                var list = animeEpisodesRepository.Table.Where(expression);
+                var list = animeEpisodesRepository.TableNoTracking.Where(expression);
                 response.Count = list.Count();
                 response.List = list.ToList();
                 response.IsSuccessful = true;

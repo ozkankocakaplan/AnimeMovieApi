@@ -85,7 +85,7 @@ namespace AnimeMovie.Business.Concrete
             var response = new ServiceResponse<FanArt>();
             try
             {
-                var list = fanArtRepository.Table.Where(expression).ToList();
+                var list = fanArtRepository.TableNoTracking.Where(expression).ToList();
                 response.List = list;
                 response.Count = list.Count;
                 response.IsSuccessful = true;

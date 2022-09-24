@@ -84,7 +84,7 @@ namespace AnimeMovie.Business.Concrete
             var response = new ServiceResponse<UserEmailVertification>();
             try
             {
-                var list = userEmailVertificationRepository.Table.Where(expression).ToList();
+                var list = userEmailVertificationRepository.TableNoTracking.Where(expression).ToList();
                 response.List = list;
                 response.Count = list.Count;
                 response.IsSuccessful = true;

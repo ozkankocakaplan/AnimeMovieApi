@@ -83,7 +83,7 @@ namespace AnimeMovie.Business.Concrete
             var response = new ServiceResponse<UserForgotPassword>();
             try
             {
-                var list = userForgotPasswordRepository.Table.Where(expression).ToList();
+                var list = userForgotPasswordRepository.TableNoTracking.Where(expression).ToList();
                 response.List = list;
                 response.Count = list.Count;
                 response.IsSuccessful = true;

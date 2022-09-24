@@ -16,13 +16,23 @@ namespace AnimeMovie.API.Controllers
         private readonly IAnimeService animeService;
         private readonly IAnimeRatingService animeRatingService;
         private readonly IAnimeSeasonService animeSeasonService;
+        private readonly IAnimeSeasonMusicService animeSeasonMusicService;
+        private readonly IAnimeEpisodesService animeEpisodesService;
+        private readonly IEpisodesService episodesService;
+        private readonly ICategoryTypeService categoryTypeService;
         public AnimeController(IWebHostEnvironment webHost,
-            IAnimeService anime, IAnimeRatingService animeRating, IAnimeSeasonService animeSeason)
+            IAnimeService anime, IAnimeRatingService animeRating, IAnimeSeasonService animeSeason,
+            IAnimeSeasonMusicService seasonMusic, IAnimeEpisodesService animeEpisodes, IEpisodesService episodes,
+            ICategoryTypeService categoryType)
         {
+            animeEpisodesService = animeEpisodes;
+            categoryTypeService = categoryType;
+            animeSeasonMusicService = seasonMusic;
             webHostEnvironment = webHost;
             animeService = anime;
             animeRatingService = animeRating;
             animeSeasonService = animeSeason;
+            episodesService = episodes;
         }
         #region Anime
 
@@ -116,6 +126,37 @@ namespace AnimeMovie.API.Controllers
         [Roles(Roles = RolesAttribute.AdminOrModerator)]
         public IActionResult deleteAnime(int id)
         {
+            var seasons = animeSeasonService.getList(x => x.AnimeID == id);
+            var categories = categoryTypeService.getList(x => x.ContentID == id && x.Type == Entites.Type.Anime);
+            if (categories.Count != 0 && categories.List != null)
+            {
+                foreach (var category in categories.List)
+                {
+                    categoryTypeService.delete(x => x.ID == category.ID);
+                }
+            }
+            if (seasons.List != null && seasons.Count != 0)
+            {
+                foreach (var season in seasons.List)
+                {
+                    var animeEpisodes = animeEpisodesService.getList(x => x.SeasonID == season.ID);
+                    if (animeEpisodes.Count != 0 && animeEpisodes.List != null)
+                    {
+                        foreach (var animeEpisode in animeEpisodes.List)
+                        {
+                            var episodes = episodesService.getList(x => x.EpisodeID == animeEpisode.ID);
+                            if (episodes.List != null && episodes.Count != 0)
+                            {
+                                foreach (var episode in episodes.List)
+                                {
+                                    episodesService.delete(x => x.ID == episode.ID);
+                                }
+                            }
+                            animeEpisodesService.delete(x => x.ID == animeEpisode.ID);
+                        }
+                    }
+                }
+            }
             var response = animeService.delete(x => x.ID == id);
             return Ok(response);
         }

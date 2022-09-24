@@ -116,7 +116,7 @@ namespace AnimeMovie.Business.Concrete
             var response = new ServiceResponse<Users>();
             try
             {
-                var list = usersRepository.GetAll().ToList();
+                var list = usersRepository.TableNoTracking.ToList();
                 response.List = list.Skip((pageNo - 1) * ShowCount).Take(ShowCount).ToList();
                 int page = 0;
                 var totalUsers = list.Count();

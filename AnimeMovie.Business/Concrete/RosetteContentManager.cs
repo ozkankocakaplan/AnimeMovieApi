@@ -83,7 +83,7 @@ namespace AnimeMovie.Business.Concrete
             var response = new ServiceResponse<RosetteContent>();
             try
             {
-                var list = rosetteContentRepository.Table.Where(expression).ToList();
+                var list = rosetteContentRepository.TableNoTracking.Where(expression).ToList();
                 response.List = list;
                 response.Count = list.Count;
                 response.IsSuccessful = true;

@@ -84,7 +84,7 @@ namespace AnimeMovie.Business.Concrete
             var response = new ServiceResponse<SocialMediaAccount>();
             try
             {
-                var list = socialMediaAccountRepository.Table.Where(expression).ToList();
+                var list = socialMediaAccountRepository.TableNoTracking.Where(expression).ToList();
                 response.Count = list.Count;
                 response.List = list;
                 response.IsSuccessful = true;

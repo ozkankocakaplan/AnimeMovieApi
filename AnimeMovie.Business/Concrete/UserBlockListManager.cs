@@ -84,7 +84,7 @@ namespace AnimeMovie.Business.Concrete
             var response = new ServiceResponse<UserBlockList>();
             try
             {
-                var list = userBlockListRepository.Table.Where(expression).ToList();
+                var list = userBlockListRepository.TableNoTracking.Where(expression).ToList();
                 response.List = list;
                 response.Count = list.Count;
                 response.IsSuccessful = true;

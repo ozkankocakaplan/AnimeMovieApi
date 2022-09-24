@@ -86,7 +86,7 @@ namespace AnimeMovie.Business.Concrete
             var response = new ServiceResponse<ContentComplaint>();
             try
             {
-                var list = contentComplaintRepository.Table.Where(expression).ToList();
+                var list = contentComplaintRepository.TableNoTracking.Where(expression).ToList();
                 response.List = list;
                 response.Count = list.Count;
                 response.IsSuccessful = true;

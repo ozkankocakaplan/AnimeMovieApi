@@ -86,7 +86,7 @@ namespace AnimeMovie.Business.Concrete
             var response = new ServiceResponse<Comments>();
             try
             {
-                var list = commentsRepository.Table.Where(expression).ToList();
+                var list = commentsRepository.TableNoTracking.Where(expression).ToList();
                 response.List = list;
                 response.Count = list.Count;
                 response.IsSuccessful = true;

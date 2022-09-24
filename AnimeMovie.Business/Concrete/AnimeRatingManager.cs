@@ -88,7 +88,7 @@ namespace AnimeMovie.Business.Concrete
             var response = new ServiceResponse<AnimeRating>();
             try
             {
-                var list = animeRatingRepository.Table.Where(expression).ToList();
+                var list = animeRatingRepository.TableNoTracking.Where(expression).ToList();
                 response.List = list;
                 response.Count = list.Count;
                 response.IsSuccessful = true;
