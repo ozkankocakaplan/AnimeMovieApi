@@ -19,6 +19,7 @@ namespace AnimeMovie.Business.Concrete
             var response = new ServiceResponse<MangaEpisodes>();
             try
             {
+                response.Entity = mangaEpisodesRepository.Create(entity);
                 response.IsSuccessful = true;
             }
             catch (Exception ex)
@@ -34,7 +35,7 @@ namespace AnimeMovie.Business.Concrete
             var response = new ServiceResponse<MangaEpisodes>();
             try
             {
-                response.IsSuccessful = true;
+                response.IsSuccessful = mangaEpisodesRepository.Delete(expression);
             }
             catch (Exception ex)
             {
@@ -49,6 +50,7 @@ namespace AnimeMovie.Business.Concrete
             var response = new ServiceResponse<MangaEpisodes>();
             try
             {
+                response.Entity = mangaEpisodesRepository.get(expression);
                 response.IsSuccessful = true;
             }
             catch (Exception ex)
@@ -64,6 +66,8 @@ namespace AnimeMovie.Business.Concrete
             var response = new ServiceResponse<MangaEpisodes>();
             try
             {
+                response.List = mangaEpisodesRepository.GetAll().ToList();
+                response.Count = mangaEpisodesRepository.Count();
                 response.IsSuccessful = true;
             }
             catch (Exception ex)
@@ -79,6 +83,9 @@ namespace AnimeMovie.Business.Concrete
             var response = new ServiceResponse<MangaEpisodes>();
             try
             {
+                var list = mangaEpisodesRepository.TableNoTracking.Where(expression).ToList();
+                response.List = list;
+                response.Count = list.Count;
                 response.IsSuccessful = true;
             }
             catch (Exception ex)
@@ -94,6 +101,7 @@ namespace AnimeMovie.Business.Concrete
             var response = new ServiceResponse<MangaEpisodes>();
             try
             {
+                response.Entity = mangaEpisodesRepository.Update(entity);
                 response.IsSuccessful = true;
             }
             catch (Exception ex)

@@ -4,7 +4,7 @@ namespace AnimeMovie.Entites
     public class Anime : BaseEntity
     {
         public string? Img { get; set; }
-        public string? AnimeName { get; set; }
+        public string AnimeName { get; set; }
         public string AnimeDescription { get; set; }
         public string MalRating { get; set; }
         public string AgeLimit { get; set; }
@@ -14,7 +14,7 @@ namespace AnimeMovie.Entites
         public VideoType VideoType { get; set; }
         public int Views { get; set; }
         public int Like { get; set; }
-        public string Arrangement { get; set; }
+        public string? Arrangement { get; set; }
         public string SeoUrl { get; set; }
 
 

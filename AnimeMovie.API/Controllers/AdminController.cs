@@ -61,10 +61,19 @@ namespace AnimeMovie.API.Controllers
         #endregion
         #region SocialMediaAccount
         [HttpGet]
+        [Roles(Roles = RolesAttribute.AdminOrModerator)]
         [Route("/getSocialMediaAccount")]
         public IActionResult getSocialMediaAccount()
         {
-            var response = siteDescriptionService.getList();
+            var id = Handler.UserID(HttpContext);
+            var response = socialMediaAccountService.get(x => x.UserID == id);
+            return Ok(response);
+        }
+        [HttpGet]
+        [Route("/getSocialMediaAccounts")]
+        public IActionResult getSocialMediaAccounts()
+        {
+            var response = socialMediaAccountService.getList();
             return Ok(response);
         }
         [HttpPut]
@@ -72,8 +81,19 @@ namespace AnimeMovie.API.Controllers
         [Route("/updateSocialMediaAccount")]
         public IActionResult updateSocialMediaAccount([FromBody] SocialMediaAccount socialMediaAccount)
         {
-            var response = socialMediaAccountService.update(socialMediaAccount);
-            return Ok(response);
+            var id = Handler.UserID(HttpContext);
+            socialMediaAccount.UserID = id;
+            var list = socialMediaAccountService.getList(x => x.UserID == id);
+            if (list.Count == 0)
+            {
+                return Ok(socialMediaAccountService.add(socialMediaAccount));
+            }
+            else
+            {
+                var response = socialMediaAccountService.update(socialMediaAccount);
+                return Ok(response);
+            }
+
         }
         [HttpPost]
         [Roles(Roles = RolesAttribute.AdminOrModerator)]

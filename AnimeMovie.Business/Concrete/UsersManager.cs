@@ -177,6 +177,22 @@ namespace AnimeMovie.Business.Concrete
             throw new NullReferenceException();
         }
 
+        public ServiceResponse<Users> updateEmail(string email, int userID)
+        {
+            var response = new ServiceResponse<Users>();
+            try
+            {
+                response.Entity = usersRepository.updateEmail(email, userID);
+                response.IsSuccessful = true;
+            }
+            catch (Exception ex)
+            {
+                response.HasExceptionError = true;
+                response.ExceptionMessage = ex.ToString();
+            }
+            return response;
+        }
+
         public ServiceResponse<Users> updateImage(string imgUrl, int userID)
         {
             var response = new ServiceResponse<Users>();
@@ -244,6 +260,25 @@ namespace AnimeMovie.Business.Concrete
                     response.HasExceptionError = true;
                     response.ExceptionMessage = "Kullanıcı Bulunamadı";
                 }
+            }
+            catch (Exception ex)
+            {
+                response.HasExceptionError = true;
+                response.ExceptionMessage = ex.ToString();
+            }
+            return response;
+        }
+
+        public ServiceResponse<Users> updateUserInfo(string nameSurname, string userName, int userID)
+        {
+            var response = new ServiceResponse<Users>();
+            try
+            {
+                var user = usersRepository.TableNoTracking.Where(x => x.ID == userID).SingleOrDefault();
+                user.UserName = userName;
+                var url = seoUrl.createUserLink(user);
+                response.Entity = usersRepository.updateUserInfo(nameSurname, userName, url, userID);
+                response.IsSuccessful = true;
             }
             catch (Exception ex)
             {

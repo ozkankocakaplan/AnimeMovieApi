@@ -23,6 +23,20 @@ namespace AnimeMovie.DataAccess.Concrete
             return null;
         }
 
+        public Users updateEmail(string email, int userID)
+        {
+            var _user = get(x => x.ID == userID);
+            if (_user != null)
+            {
+                _user.Email = email;
+                movieDbContext.Users.Attach(_user);
+                movieDbContext.Entry(_user).Property(x => x.Email).IsModified = true;
+                movieDbContext.SaveChanges();
+                return _user;
+            }
+            return null;
+        }
+
         public Users updateImage(string imgUrl, int userID)
         {
             var user = get(x => x.ID == userID);
@@ -48,6 +62,10 @@ namespace AnimeMovie.DataAccess.Concrete
                     movieDbContext.Entry(user).Property(x => x.Password).IsModified = true;
                     movieDbContext.SaveChanges();
                 }
+                else
+                {
+                    return null;
+                }
             }
             return user;
         }
@@ -60,6 +78,23 @@ namespace AnimeMovie.DataAccess.Concrete
                 user.isBanned = !user.isBanned;
                 movieDbContext.Users.Attach(user);
                 movieDbContext.Entry(user).Property(x => x.isBanned).IsModified = true;
+                movieDbContext.SaveChanges();
+            }
+            return user;
+        }
+
+        public Users updateUserInfo(string nameSurname, string userName, string seoUrl, int userID)
+        {
+            var user = get(x => x.ID == userID);
+            if (user != null)
+            {
+                user.NameSurname = nameSurname;
+                user.UserName = userName;
+                user.SeoUrl = seoUrl;
+                movieDbContext.Users.Attach(user);
+                movieDbContext.Entry(user).Property(x => x.UserName).IsModified = true;
+                movieDbContext.Entry(user).Property(x => x.NameSurname).IsModified = true;
+                movieDbContext.Entry(user).Property(x => x.SeoUrl).IsModified = true;
                 movieDbContext.SaveChanges();
             }
             return user;

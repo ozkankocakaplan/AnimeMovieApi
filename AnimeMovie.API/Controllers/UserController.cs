@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AnimeMovie.Business;
 using AnimeMovie.Business.Abstract;
 using AnimeMovie.DataAccess.Abstract;
 using AnimeMovie.Entites;
@@ -51,6 +52,15 @@ namespace AnimeMovie.API.Controllers
         }
 
         #region Users
+        [Roles(Roles = RolesAttribute.All)]
+        [Route("/getMe")]
+        [HttpGet]
+        public IActionResult getMe()
+        {
+            var id = Handler.UserID(HttpContext);
+            var response = usersService.get(x => x.ID == id);
+            return Ok(response);
+        }
         [Roles(Roles = RolesAttribute.AdminOrModerator)]
         [Route("/getPaginatedUsers/{pageNo}/{showCount}")]
         [HttpGet]
@@ -77,7 +87,7 @@ namespace AnimeMovie.API.Controllers
             var response = usersService.add(user);
             return Ok(response);
         }
-        [Roles(Roles = RolesAttribute.User)]
+        [Roles(Roles = RolesAttribute.All)]
         [Route("/updatePassword/{currentPassword}/{newPassword}")]
         [HttpPut]
         public IActionResult updatePassword(string currentPassword, string newPassword)
@@ -86,6 +96,34 @@ namespace AnimeMovie.API.Controllers
             {
                 var response = usersService.updatePassword(currentPassword, newPassword, Handler.UserID(HttpContext));
                 return Ok(response);
+            }
+            return BadRequest();
+        }
+        [Roles(Roles = RolesAttribute.All)]
+        [Route("/updateUserInfo/{nameSurname}/{userName}")]
+        [HttpPut]
+        public IActionResult updateUserInfo(string nameSurname, string userName)
+        {
+            if (nameSurname.Length != 0 && userName.Length != 0)
+            {
+                var response = usersService.updateUserInfo(nameSurname, userName, Handler.UserID(HttpContext));
+                return Ok(response);
+            }
+            return BadRequest();
+        }
+        [Roles(Roles = RolesAttribute.All)]
+        [Route("/updateEmailChange/{email}/{code}")]
+        [HttpPut]
+        public IActionResult updateEmailChange(string email, string code)
+        {
+            if (email.Length != 0 && code.Length != 0)
+            {
+                var checkCode = userEmailVertificationService.get(x => x.Code == code && x.Email == email);
+                if (checkCode.Entity != null)
+                {
+                    var response = usersService.updateEmail(email, Handler.UserID(HttpContext));
+                    return Ok(response);
+                }
             }
             return BadRequest();
         }
@@ -156,9 +194,22 @@ namespace AnimeMovie.API.Controllers
         {
             if (email.Length != 0)
             {
-                var getUserEmail = userEmailVertificationService.delete(x => x.Email == email);
-                var response = userEmailVertificationService.add(new UserEmailVertification() { Email = email });
-                return Ok(response);
+                var emailCheck = usersService.get(x => x.Email == email);
+                if (emailCheck.Entity == null)
+                {
+                    var getUserEmail = userEmailVertificationService.delete(x => x.Email == email);
+                    var code = Handler.createData();
+                    var response = userEmailVertificationService.add(new UserEmailVertification() { Email = email, Code = code });
+                    return Ok(response);
+                }
+                else
+                {
+                    var resp = new ServiceResponse<Users>();
+                    resp.HasExceptionError = true;
+                    resp.ExceptionMessage = "E-posta Kullanılıyor";
+                    return Ok(resp);
+                }
+
             }
             return BadRequest();
         }
@@ -539,6 +590,8 @@ namespace AnimeMovie.API.Controllers
             return Ok(response);
         }
         #endregion
+
+
     }
 }
 

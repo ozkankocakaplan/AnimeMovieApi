@@ -88,7 +88,7 @@ namespace AnimeMovie.API.Controllers
                     }
                 }
             }
-            var response = animeService.add(anime);
+            var response = animeService.update(anime);
             return Ok(response);
         }
         [HttpGet]
@@ -122,10 +122,67 @@ namespace AnimeMovie.API.Controllers
             return Ok(response);
         }
         [HttpDelete]
+        [Route("/deleteAnimes")]
+        [Roles(Roles = RolesAttribute.AdminOrModerator)]
+        public IActionResult deleteAnimes([FromBody] List<int> animes)
+        {
+            if (animes != null && animes.Count != 0)
+            {
+                foreach (var anime in animes)
+                {
+                    var seasons = animeSeasonService.getList(x => x.AnimeID == anime);
+                    var categories = categoryTypeService.getList(x => x.ContentID == anime && x.Type == Entites.Type.Anime);
+                    if (categories.Count != 0 && categories.List != null)
+                    {
+                        foreach (var category in categories.List)
+                        {
+                            categoryTypeService.delete(x => x.ID == category.ID);
+                        }
+                    }
+                    if (seasons.List != null && seasons.Count != 0)
+                    {
+                        foreach (var season in seasons.List)
+                        {
+                            var seasonMusics = animeSeasonMusicService.getList(x => x.SeasonID == season.ID);
+                            if (seasonMusics.List != null && seasonMusics.Count != 0)
+                            {
+                                foreach (var seasonMusic in seasonMusics.List)
+                                {
+                                    animeSeasonMusicService.delete(x => x.ID == seasonMusic.ID);
+                                }
+                            }
+
+                            var animeEpisodes = animeEpisodesService.getList(x => x.SeasonID == season.ID);
+                            if (animeEpisodes.Count != 0 && animeEpisodes.List != null)
+                            {
+                                foreach (var animeEpisode in animeEpisodes.List)
+                                {
+                                    var episodes = episodesService.getList(x => x.EpisodeID == animeEpisode.ID);
+                                    if (episodes.List != null && episodes.Count != 0)
+                                    {
+                                        foreach (var episode in episodes.List)
+                                        {
+                                            episodesService.delete(x => x.ID == episode.ID);
+                                        }
+                                    }
+                                    animeEpisodesService.delete(x => x.ID == animeEpisode.ID);
+                                }
+                            }
+                            animeSeasonService.delete(x => x.ID == season.ID);
+                        }
+                    }
+                    var response = animeService.delete(x => x.ID == anime);
+                }
+            }
+
+            return Ok();
+        }
+        [HttpDelete]
         [Route("/deleteAnime/{id}")]
         [Roles(Roles = RolesAttribute.AdminOrModerator)]
         public IActionResult deleteAnime(int id)
         {
+
             var seasons = animeSeasonService.getList(x => x.AnimeID == id);
             var categories = categoryTypeService.getList(x => x.ContentID == id && x.Type == Entites.Type.Anime);
             if (categories.Count != 0 && categories.List != null)
@@ -139,6 +196,15 @@ namespace AnimeMovie.API.Controllers
             {
                 foreach (var season in seasons.List)
                 {
+                    var seasonMusics = animeSeasonMusicService.getList(x => x.SeasonID == season.ID);
+                    if (seasonMusics.List != null && seasonMusics.Count != 0)
+                    {
+                        foreach (var seasonMusic in seasonMusics.List)
+                        {
+                            animeSeasonMusicService.delete(x => x.ID == seasonMusic.ID);
+                        }
+                    }
+
                     var animeEpisodes = animeEpisodesService.getList(x => x.SeasonID == season.ID);
                     if (animeEpisodes.Count != 0 && animeEpisodes.List != null)
                     {
@@ -155,6 +221,7 @@ namespace AnimeMovie.API.Controllers
                             animeEpisodesService.delete(x => x.ID == animeEpisode.ID);
                         }
                     }
+                    animeSeasonService.delete(x => x.ID == season.ID);
                 }
             }
             var response = animeService.delete(x => x.ID == id);

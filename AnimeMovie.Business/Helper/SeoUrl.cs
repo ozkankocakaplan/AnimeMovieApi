@@ -28,7 +28,7 @@ namespace AnimeMovie.Business.Helper
 
         public string createUserLink(Users user)
         {
-            string url = createUrl(user.UserName);
+            string url = createUrl(user.UserName + "-" + user.ID);
             return url.ToLower();
         }
 

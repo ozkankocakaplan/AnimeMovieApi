@@ -35,8 +35,7 @@ namespace AnimeMovie.Business.Concrete
             var response = new ServiceResponse<AnimeSeason>();
             try
             {
-                animeSeasonRepository.Delete(expression);
-                response.IsSuccessful = true;
+                response.IsSuccessful = animeSeasonRepository.Delete(expression); 
             }
             catch (Exception ex)
             {

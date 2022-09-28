@@ -1,12 +1,23 @@
 ﻿<Properties StartupConfiguration="{36613161-7983-4322-990B-F567FDAA2016}|Default">
-  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
-  <MonoDevelop.Ide.ItemProperties.AnimeMovie.API PreferredExecutionTarget="/Applications/Safari.app" />
   <MultiItemStartupConfigurations />
-  <MonoDevelop.Ide.Workbench ActiveDocument="AnimeMovie.API/Controllers/AnimeSeasonController.cs">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore>
+      <Breakpoint file="/Users/ozkan/Projects/AnimeMovie/AnimeMovie.API/Controllers/MangaController.cs" relfile="AnimeMovie.API/Controllers/MangaController.cs" line="55" column="1" />
+    </BreakpointStore>
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.ItemProperties.AnimeMovie.API PreferredExecutionTarget="/Applications/Safari.app" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="AnimeMovie.API/Controllers/MangaController.cs">
     <Files>
-      <File FileName="AnimeMovie.API/Controllers/AnimeSeasonController.cs" Line="39" Column="1" />
-      <File FileName="AnimeMovie.API/Program.cs" />
-      <File FileName="AnimeMovie.Business/Concrete/AnimeSeasonMusicManager.cs" />
+      <File FileName="AnimeMovie.Entites/MangaEpisodes.cs" />
+      <File FileName="AnimeMovie.Entites/MangaEpisodeContent.cs" />
+      <File FileName="AnimeMovie.API/Controllers/MangaController.cs" Line="200" Column="57" />
+      <File FileName="AnimeMovie.Business/Concrete/MangaEpisodesManager.cs" />
+      <File FileName="AnimeMovie.Business/Concrete/MangaEpisodeContentManager.cs" />
+      <File FileName="AnimeMovie.DataAccess/GenericRepository.cs" />
+      <File FileName="AnimeMovie.DataAccess/MovieDbContext.cs" />
+      <File FileName="AnimeMovie.Business/ServiceResponse.cs" Line="13" Column="1" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
@@ -15,20 +26,10 @@
             <Node name="AnimeMovie.API" expanded="True">
               <Node name="Controllers" expanded="True" />
             </Node>
-            <Node name="AnimeMovie.Business" expanded="True">
-              <Node name="Concrete" expanded="True" />
-            </Node>
-            <Node name="AnimeMovie.DataAccess" expanded="True" />
-            <Node name="AnimeMovie.Entites" expanded="True" />
+            <Node name="AnimeMovie.Business" expanded="True" />
           </Node>
         </State>
       </Pad>
     </Pads>
   </MonoDevelop.Ide.Workbench>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.DebuggingService.Breakpoints>
-    <BreakpointStore>
-      <Breakpoint file="/Users/ozkan/Projects/AnimeMovie/AnimeMovie.Business/Concrete/AnimeSeasonMusicManager.cs" relfile="AnimeMovie.Business/Concrete/AnimeSeasonMusicManager.cs" line="36" column="1" />
-    </BreakpointStore>
-  </MonoDevelop.Ide.DebuggingService.Breakpoints>
 </Properties>
