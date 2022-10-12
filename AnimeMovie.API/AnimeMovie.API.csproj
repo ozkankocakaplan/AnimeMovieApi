@@ -17,6 +17,7 @@
     <None Remove="Microsoft.AspNetCore.Authentication.JwtBearer" />
     <None Remove="Controllers\" />
     <None Remove="Microsoft.AspNetCore.SignalR" />
+    <None Remove="Models\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Controllers\" />
@@ -25,6 +26,7 @@
     <Folder Include="wwwroot\anime\" />
     <Folder Include="wwwroot\manga\" />
     <Folder Include="wwwroot\fanart\" />
+    <Folder Include="Models\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AnimeMovie.Entites\AnimeMovie.Entites.csproj">

@@ -13,7 +13,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.WebHost.UseUrls("http://192.168.2.175:37323");
+builder.WebHost.UseUrls("http://192.168.2.100:37323");
 
 
 
@@ -162,6 +162,18 @@ builder.Services.AddScoped<IAnimeImageService, AnimeImageManager>();
 
 builder.Services.AddScoped<IMangaImageRepository, MangaImageRepository>();
 builder.Services.AddScoped<IMangaImageService, MangaImageManager>();
+
+builder.Services.AddScoped<IRosetteContentRepository, RosetteContentRepository>();
+builder.Services.AddScoped<IRosetteContentService, RosetteContentManager>();
+
+builder.Services.AddScoped<IFavoriteRepository, FavoriteRepository>();
+builder.Services.AddScoped<IFavoriteService, FavoriteManager>();
+
+builder.Services.AddScoped<IUserListRepository, UserListRepository>();
+builder.Services.AddScoped<IUserListService, UserListManager>();
+
+builder.Services.AddScoped<IUserListContentsRepository, UserListContentsRepository>();
+builder.Services.AddScoped<IUserListContentsService, UserListContentsManager>();
 
 var app = builder.Build();
 

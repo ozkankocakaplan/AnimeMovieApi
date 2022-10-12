@@ -7,6 +7,7 @@ namespace AnimeMovie.Business.Abstract
     public interface IUsersService : IService<Users>
     {
         ServiceResponse<UserModel> login(string userName, string password);
+        ServiceResponse<Users> addUser(Users user, string code);
         ServiceResponse<Users> getPaginatedUsers(int pageNo, int ShowCount);
         ServiceResponse<Users> updateUserBanned(int userID);
         ServiceResponse<Users> updateImage(string imgUrl, int userID);
@@ -14,6 +15,7 @@ namespace AnimeMovie.Business.Abstract
         ServiceResponse<Users> updateUserName(string userName, int userID);
         ServiceResponse<Users> updateUserInfo(string nameSurname, string userName, int userID);
         ServiceResponse<Users> updateEmail(string email, int userID);
+        ServiceResponse<Users> updateRole(RoleType role, int userID);
     }
 }
 

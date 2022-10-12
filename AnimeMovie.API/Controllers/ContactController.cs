@@ -69,7 +69,7 @@ namespace AnimeMovie.API.Controllers
         {
             if (subject.Subject.Length != 0)
             {
-                var response = contactSubjectService.add(subject);
+                var response = contactSubjectService.update(subject);
                 return Ok(response);
             }
             return BadRequest();
@@ -84,7 +84,7 @@ namespace AnimeMovie.API.Controllers
         }
         [HttpGet]
         [Route("/getContactSubjects")]
-        public IActionResult getContactSubjects(int id)
+        public IActionResult getContactSubjects()
         {
             var response = contactSubjectService.getList();
             return Ok(response);

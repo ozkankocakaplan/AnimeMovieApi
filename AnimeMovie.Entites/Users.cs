@@ -19,7 +19,6 @@ namespace AnimeMovie.Entites
         public bool isBanned { get; set; } = false;
         public string SeoUrl { get; set; }
         public RoleType RoleType { get; set; } = RoleType.User;
-
     }
 }
 

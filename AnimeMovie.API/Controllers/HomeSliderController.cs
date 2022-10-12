@@ -23,7 +23,7 @@ namespace AnimeMovie.API.Controllers
         [HttpPost]
         [Route("/addHomeSlider")]
         [Roles(Roles = RolesAttribute.AdminOrModerator)]
-        public IActionResult addHomeSlider([FromForm] IFormFile img, HomeSlider homeSlider)
+        public IActionResult addHomeSlider([FromForm] IFormFile img, string description, bool isDisplay, string sliderTitle, string url, string image)
         {
             if (img != null && img.Length != 0)
             {
@@ -33,16 +33,22 @@ namespace AnimeMovie.API.Controllers
                 {
                     img.CopyTo(fs);
                     fs.Flush();
-                    homeSlider.Image = "/image/" + guid + img.FileName;
+                    image = "/image/" + guid + img.FileName;
                 }
             }
-            var response = homeSliderService.add(homeSlider);
+            HomeSlider slider = new HomeSlider();
+            slider.Description = description;
+            slider.isDisplay = isDisplay;
+            slider.SliderTitle = sliderTitle;
+            slider.Url = url;
+            slider.Image = image;
+            var response = homeSliderService.add(slider);
             return Ok(response);
         }
         [HttpPut]
         [Route("/updateHomeSlider")]
         [Roles(Roles = RolesAttribute.AdminOrModerator)]
-        public IActionResult updateHomeSlider([FromForm] IFormFile img, HomeSlider homeSlider)
+        public IActionResult updateHomeSlider([FromForm] IFormFile img, int id, string description, bool isDisplay, string sliderTitle, string url, string image)
         {
             if (img != null && img.Length != 0)
             {
@@ -52,10 +58,17 @@ namespace AnimeMovie.API.Controllers
                 {
                     img.CopyTo(fs);
                     fs.Flush();
-                    homeSlider.Image = "/image/" + guid + img.FileName;
+                    image = "/image/" + guid + img.FileName;
                 }
             }
-            var response = homeSliderService.add(homeSlider);
+            HomeSlider slider = new HomeSlider();
+            slider.ID = id;
+            slider.Description = description;
+            slider.isDisplay = isDisplay;
+            slider.SliderTitle = sliderTitle;
+            slider.Url = url;
+            slider.Image = image;
+            var response = homeSliderService.update(slider);
             return Ok(response);
         }
         [HttpDelete]
@@ -74,7 +87,7 @@ namespace AnimeMovie.API.Controllers
             return Ok(response);
         }
         [HttpGet]
-        [Route("/getHomeSlider")]
+        [Route("/getHomeSlider/{id}")]
         public IActionResult getHomeSlider(int id)
         {
             var response = homeSliderService.get(x => x.ID == id);

@@ -16,7 +16,7 @@ namespace AnimeMovie.API
                 context.SiteDescription.Add(new Entites.SiteDescription()
                 {
                     InstagramUrl = "#",
-                    
+
                     YoutubeUrl = "#",
                     Keywords = "Anime,Manga",
                     Description = "Anime ve Manga Film Sitesi",
@@ -38,7 +38,8 @@ namespace AnimeMovie.API
                     UpdateDate = DateTime.Now,
                     UpdateInformation = "Güncellemeler",
                     WarningDate = DateTime.Now,
-                    WarningInformation = "Uyarı"
+                    WarningInformation = "Uyarı",
+                    About = "Web sitesi hakkında"
                 });
                 context.SaveChanges();
             }

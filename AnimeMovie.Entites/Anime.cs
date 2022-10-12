@@ -16,8 +16,6 @@ namespace AnimeMovie.Entites
         public int Like { get; set; }
         public string? Arrangement { get; set; }
         public string SeoUrl { get; set; }
-
-
     }
 }
 

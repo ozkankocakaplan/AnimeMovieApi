@@ -101,6 +101,14 @@ namespace AnimeMovie.API.Controllers
         }
         [HttpGet]
         [AllowAnonymous]
+        [Route("/getSearchAnime/{search}")]
+        public IActionResult getSearchAnimes(string search)
+        {
+            var response = animeService.getList(x => x.AnimeName.ToLower().Contains(search.ToLower()));
+            return Ok(response);
+        }
+        [HttpGet]
+        [AllowAnonymous]
         [Route("/getPaginatedAnime/{pageNo}/{showCount}")]
         public IActionResult getPaginatedAnime(int pageNo = 1, int showCount = 10)
         {

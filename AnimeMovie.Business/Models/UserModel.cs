@@ -6,6 +6,7 @@ namespace AnimeMovie.Business.Models
     public class UserModel : Users
     {
         public string Token { get; set; }
+        public UserLoginHistory UserLoginHistory { get; set; }
         public UserModel(Users users)
         {
             this.ID = users.ID;
@@ -19,6 +20,7 @@ namespace AnimeMovie.Business.Models
             this.CreateTime = users.CreateTime;
             this.Email = users.Email;
             this.Gender = users.Gender;
+            this.Discover = users.Discover;
         }
     }
 }

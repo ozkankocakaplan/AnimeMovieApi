@@ -2,8 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AnimeMovie.API.Models;
 using AnimeMovie.Business;
 using AnimeMovie.Business.Abstract;
+using AnimeMovie.Business.Models;
 using AnimeMovie.DataAccess.Abstract;
 using AnimeMovie.Entites;
 using Microsoft.AspNetCore.Authorization;
@@ -28,13 +30,26 @@ namespace AnimeMovie.API.Controllers
         private readonly ILikeService likeService;
         private readonly IFanArtService fanArtService;
         private readonly IUserMessageService userMessageService;
+        private readonly IUserLoginHistoryService userLoginHistoryService;
+        private readonly IFavoriteService favoriteService;
+        private readonly IRosetteContentService rosetteContentService;
+        private readonly IUserRosetteService userRosetteService;
+        private readonly IUserListService userListService;
+        private readonly IUserListContentsService userListContentsService;
         public UserController(IWebHostEnvironment webHost, IUsersService users, IAnimeRatingService animeRating,
             IAnimeListService animeList,
             IUserEmailVertificationService userEmailVertification,
             IUserForgotPasswordService userForgotPassword, IUserBlockListService userBlockList,
             IReviewService review, ICommentsService comments, INotificationService notification, IMangaListService mangaList,
-            ILikeService like, IFanArtService fanArt, IUserMessageService userMessage)
+            ILikeService like, IFanArtService fanArt, IUserMessageService userMessage, IUserLoginHistoryService userLoginHistory,
+            IFavoriteService favorite, IRosetteContentService rosetteContent, IUserRosetteService userRosette,
+            IUserListService userList,
+            IUserListContentsService userListContents)
         {
+            userListService = userList;
+            userListContentsService = userListContents;
+            userRosetteService = userRosette;
+            rosetteContentService = rosetteContent;
             webHostEnvironment = webHost;
             usersService = users;
             animeRatingService = animeRating;
@@ -49,6 +64,8 @@ namespace AnimeMovie.API.Controllers
             likeService = like;
             fanArtService = fanArt;
             userMessageService = userMessage;
+            userLoginHistoryService = userLoginHistory;
+            favoriteService = favorite;
         }
 
         #region Users
@@ -75,16 +92,34 @@ namespace AnimeMovie.API.Controllers
         public IActionResult login(string userName, string password)
         {
             var response = usersService.login(userName, password);
+            if (response.Entity != null)
+            {
+                var userHistory = userLoginHistoryService.get(x => x.UserID == response.Entity.ID);
+                if (userHistory.Entity != null)
+                {
+                    userHistory.Entity.LastSeen = DateTime.Now;
+                    response.Entity.UserLoginHistory = userLoginHistoryService.update(userHistory.Entity).Entity;
+                }
+                else
+                {
+                    response.Entity.UserLoginHistory = userLoginHistoryService.add(new UserLoginHistory()
+                    {
+                        UserID = response.Entity.ID,
+                        LastSeen = DateTime.Now
+                    }).Entity;
+                }
+
+            }
             return Ok(response);
         }
         [AllowAnonymous]
-        [Route("/addUser")]
+        [Route("/addUser/{vertificationCode}")]
         [HttpPost]
-        public IActionResult addUser([FromBody] Users user)
+        public IActionResult addUser([FromBody] Users user, string vertificationCode)
         {
             user.isBanned = false;
             user.RoleType = RoleType.User;
-            var response = usersService.add(user);
+            var response = usersService.addUser(user, vertificationCode);
             return Ok(response);
         }
         [Roles(Roles = RolesAttribute.All)]
@@ -112,6 +147,14 @@ namespace AnimeMovie.API.Controllers
             return BadRequest();
         }
         [Roles(Roles = RolesAttribute.All)]
+        [Route("/updateRole/{role}")]
+        [HttpPut]
+        public IActionResult updateRole(RoleType role)
+        {
+            var response = usersService.updateRole(role, Handler.UserID(HttpContext));
+            return Ok(response);
+        }
+        [Roles(Roles = RolesAttribute.All)]
         [Route("/updateEmailChange/{email}/{code}")]
         [HttpPut]
         public IActionResult updateEmailChange(string email, string code)
@@ -122,6 +165,14 @@ namespace AnimeMovie.API.Controllers
                 if (checkCode.Entity != null)
                 {
                     var response = usersService.updateEmail(email, Handler.UserID(HttpContext));
+                    return Ok(response);
+                }
+                else
+                {
+                    var response = new ServiceResponse<Users>();
+                    response.IsSuccessful = false;
+                    response.HasExceptionError = true;
+                    response.ExceptionMessage = "Doğrulama kodu yanlış";
                     return Ok(response);
                 }
             }
@@ -174,6 +225,53 @@ namespace AnimeMovie.API.Controllers
         {
             var response = usersService.delete(x => x.ID == userID);
             return Ok(response);
+        }
+
+        [Route("/getUserByID/{userID}")]
+        [HttpGet]
+        public IActionResult getUserByID(int userID)
+        {
+            var response = usersService.get(x => x.ID == userID);
+            if (response.Entity != null)
+            {
+                var userResponse = new ServiceResponse<UserModel>();
+                UserModel userModel = new UserModel(response.Entity);
+                userModel.UserLoginHistory = userLoginHistoryService.get(x => x.UserID == response.Entity.ID).Entity;
+                userResponse.Entity = userModel;
+                userResponse.IsSuccessful = true;
+                return Ok(userResponse);
+            }
+            return Ok(response);
+        }
+        [Route("/getUserBySeoUrl/{seoUrl}")]
+        [HttpGet]
+        public IActionResult getUserByID(string seoUrl)
+        {
+            var response = usersService.get(x => x.SeoUrl == seoUrl);
+            if (response.Entity != null)
+            {
+                var userResponse = new ServiceResponse<UserModels>();
+                UserModels userModels = new UserModels();
+                var getUser = usersService.get(x => x.SeoUrl == seoUrl).Entity;
+                if (getUser != null)
+                {
+                    userModels.User = getUser;
+                    userModels.Rosettes = userRosetteService.getList(x => x.UserID == getUser.ID).List.ToList();
+                    userModels.AnimeLists = animeListService.getList(x => x.UserID == getUser.ID).List.ToList();
+                    userModels.MangaLists = mangaListService.getList(x => x.UserID == getUser.ID).List.ToList();
+                    userModels.FanArts = fanArtService.getList(x => x.UserID == getUser.ID).List.ToList();
+                    userModels.Reviews = reviewService.getList(x => x.UserID == getUser.ID).List.ToList();
+                    userModels.UserLists = userListService.getList(x => x.UserID == getUser.ID).List.ToList();
+                    userModels.UserListContents = userListContentsService.getList(x => x.UserID == getUser.ID).List.ToList();
+
+
+                    userResponse.Entity = userModels;
+                    userResponse.IsSuccessful = true;
+                    return Ok(userResponse);
+                }
+
+            }
+            return BadRequest();
         }
         #endregion
         #region UserEmailVertification
@@ -364,7 +462,7 @@ namespace AnimeMovie.API.Controllers
         public IActionResult addReview([FromBody] Review review)
         {
             var userID = Handler.UserID(HttpContext);
-            if (review.UserID == userID && review.AnimeID != 0 && review.Message.Length != 0)
+            if (review.UserID == userID && review.ContentID != 0 && review.Message.Length != 0)
             {
                 var response = reviewService.add(review);
                 return Ok(response);
@@ -381,10 +479,10 @@ namespace AnimeMovie.API.Controllers
             return Ok(response);
         }
         [HttpGet]
-        [Route("/getReviews/{animeID}/{pageNo}/{showCount}")]
-        public IActionResult getReviews(int animeID, int pageNo = 1, int showCount = 10)
+        [Route("/getReviews/{contentID}/{type}/{pageNo}/{showCount}")]
+        public IActionResult getReviews(int contentID, int type, int pageNo = 1, int showCount = 10)
         {
-            var response = reviewService.getPaginatedReviews(x => x.AnimeID == animeID, pageNo, showCount);
+            var response = reviewService.getPaginatedReviews(x => x.ContentID == contentID && x.Type == (Type)type, pageNo, showCount);
             return Ok(response);
         }
         #endregion
@@ -533,12 +631,12 @@ namespace AnimeMovie.API.Controllers
 
         #region FanArt
         [Route("/addFanArt")]
-        [Roles(Roles = RolesAttribute.User)]
+        [Roles(Roles = RolesAttribute.All)]
         [HttpPost]
-        public IActionResult addFanArt([FromForm] IFormFile img, FanArt fanArt)
+        public IActionResult addFanArt([FromForm] IFormFile img, [FromQuery] FanArt fanArt)
         {
-            var userID = Handler.UserID(HttpContext);
-            if (img != null && img.Length != 0 && fanArt.UserID == userID)
+
+            if (img != null && img.Length != 0)
             {
                 var patch = webHostEnvironment.WebRootPath + "/fanart/";
                 using (FileStream fs = System.IO.File.Create(patch + fanArt.UserID + "-" + img.FileName))
@@ -552,20 +650,45 @@ namespace AnimeMovie.API.Controllers
             }
             return BadRequest();
         }
-        [Roles(Roles = RolesAttribute.User)]
+        [Roles(Roles = RolesAttribute.All)]
         [Route("/deleteFanArt/{id}")]
         [HttpDelete]
         public IActionResult deleteFanArt(int id)
         {
-            var userID = Handler.UserID(HttpContext);
-            var response = fanArtService.delete(x => x.ID == id && x.UserID == userID);
+            var role = Handler.RolType(HttpContext);
+            if (role == "Admin" || role == "Moderator")
+            {
+                var response = fanArtService.delete(x => x.ID == id);
+                return Ok(response);
+            }
+            else
+            {
+                var userID = Handler.UserID(HttpContext);
+                var response = fanArtService.delete(x => x.ID == id && x.UserID == userID);
+                return Ok(response);
+            }
+
+
+        }
+        [Route("/getPaginatedFanArt/{animeID}/{pageNo}/{showCount}")]
+        [HttpGet]
+        public IActionResult getPaginatedFanArt(int animeID, int pageNo = 1, int showCount = 10)
+        {
+            var response = fanArtService.getPaginatedFanArt(x => x.ContentID == animeID, pageNo, showCount);
             return Ok(response);
         }
-        [Route("/getFanArts/{animeID}/{pageNo}/{showCount}")]
-        [HttpPost]
-        public IActionResult getFanArts(int animeID, int pageNo = 1, int showCount = 10)
+        [Route("/getPaginatedFanArtNoType/{pageNo}/{showCount}")]
+        [HttpGet]
+        public IActionResult getPaginatedFanArtNoType(int animeID, int pageNo = 1, int showCount = 10)
         {
-            var response = fanArtService.getPaginatedFanArt(x => x.AnimeID == animeID, pageNo, showCount);
+            var response = fanArtService.getPaginatedFanArt(x => true, pageNo, showCount);
+            return Ok(response);
+        }
+        [Route("/getFanArts")]
+        [HttpGet]
+        public IActionResult getFanArts()
+        {
+            var response = fanArtService.getList();
             return Ok(response);
         }
         #endregion
@@ -591,7 +714,39 @@ namespace AnimeMovie.API.Controllers
         }
         #endregion
 
+        #region Favorite
+        [Route("/addFavorite")]
+        [Roles(Roles = RolesAttribute.User)]
+        [HttpPost]
+        public IActionResult addFavorite([FromBody] Favorite favorite)
+        {
+            favorite.UserID = Handler.UserID(HttpContext);
+            var response = favoriteService.add(favorite);
+            return Ok(response);
+        }
+        [Route("/deleteFavorite")]
+        [Roles(Roles = RolesAttribute.User)]
+        [HttpDelete]
+        public IActionResult deleteFavorite([FromBody] Favorite favorite)
+        {
+            var id = Handler.UserID(HttpContext);
+            if (id == favorite.UserID)
+            {
+                var response = favoriteService.delete(x => x.ID == favorite.ID);
+                return Ok(response);
+            }
+            return BadRequest();
+        }
+        [Route("/getListFavorite")]
+        [Roles(Roles = RolesAttribute.User)]
+        [HttpGet]
+        public IActionResult getListFavorite(int userID)
+        {
+            var response = favoriteService.getList(x => x.UserID == userID);
+            return Ok(response);
+        }
 
+        #endregion
     }
 }
 

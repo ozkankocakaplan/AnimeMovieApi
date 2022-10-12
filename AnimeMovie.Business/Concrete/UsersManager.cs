@@ -19,31 +19,49 @@ namespace AnimeMovie.Business.Concrete
     {
         ISeoUrl seoUrl;
         IUsersRepository usersRepository;
+        IUserEmailVertificationRepository userEmailVertificationRepository;
         IConfiguration configuration;
-        public UsersManager(ISeoUrl seo, IConfiguration conf, IUsersRepository users)
+        public UsersManager(ISeoUrl seo, IConfiguration conf, IUsersRepository users,
+            IUserEmailVertificationRepository userEmailVertification)
         {
+            userEmailVertificationRepository = userEmailVertification;
             configuration = conf;
             seoUrl = seo;
             usersRepository = users;
         }
 
-        public ServiceResponse<Users> add(Users users)
+        public ServiceResponse<Users> add(Users entity)
+        {
+            throw new NotImplementedException();
+        }
+
+        public ServiceResponse<Users> addUser(Users users, string code)
         {
             var response = new ServiceResponse<Users>();
             try
             {
-                users.SeoUrl = seoUrl.createUserLink(users);
-                var user = usersRepository.addUser(users);
-                if (user != null)
+                var getEmailVertification = userEmailVertificationRepository.get(x => x.Email == users.Email);
+                if (getEmailVertification != null && getEmailVertification.Code == code)
                 {
-                    response.Entity = user;
-                    response.IsSuccessful = true;
+                    users.SeoUrl = seoUrl.createUserLink(users);
+                    var user = usersRepository.addUser(users);
+                    if (user != null)
+                    {
+                        response.Entity = user;
+                        response.IsSuccessful = true;
+                    }
+                    else
+                    {
+                        response.HasExceptionError = true;
+                        response.ExceptionMessage = "Kullanıcı adı veya e-posta kullanılıyor";
+                    }
                 }
                 else
                 {
                     response.HasExceptionError = true;
-                    response.ExceptionMessage = "Bu kullanıcı adı kullanılıyor";
+                    response.ExceptionMessage = "Doğrulama kodu yanlış";
                 }
+
 
             }
             catch (Exception ex)
@@ -53,7 +71,6 @@ namespace AnimeMovie.Business.Concrete
             }
             return response;
         }
-
         public ServiceResponse<Users> delete(Expression<Func<Users, bool>> expression)
         {
             var response = new ServiceResponse<Users>();
@@ -235,6 +252,22 @@ namespace AnimeMovie.Business.Concrete
                     response.HasExceptionError = true;
                 }
 
+            }
+            catch (Exception ex)
+            {
+                response.HasExceptionError = true;
+                response.ExceptionMessage = ex.ToString();
+            }
+            return response;
+        }
+
+        public ServiceResponse<Users> updateRole(RoleType role, int userID)
+        {
+            var response = new ServiceResponse<Users>();
+            try
+            {
+                response.Entity = usersRepository.updateRole(role, userID);
+                response.IsSuccessful = true;
             }
             catch (Exception ex)
             {

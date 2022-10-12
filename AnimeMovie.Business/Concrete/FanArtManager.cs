@@ -1,17 +1,24 @@
 ﻿using System;
 using System.Linq.Expressions;
 using AnimeMovie.Business.Abstract;
+using AnimeMovie.Business.Models;
 using AnimeMovie.DataAccess.Abstract;
 using AnimeMovie.DataAccess.Concrete;
 using AnimeMovie.Entites;
+using Microsoft.EntityFrameworkCore;
 
 namespace AnimeMovie.Business.Concrete
 {
     public class FanArtManager : IFanArtService
     {
         private readonly IFanArtRepository fanArtRepository;
-        public FanArtManager(IFanArtRepository fanArt)
+        private readonly IMangaService mangaService;
+        private readonly IAnimeService animeService;
+        public FanArtManager(IFanArtRepository fanArt,
+            IAnimeService anime, IMangaService manga)
         {
+            animeService = anime;
+            mangaService = manga;
             fanArtRepository = fanArt;
         }
 
@@ -85,7 +92,7 @@ namespace AnimeMovie.Business.Concrete
             var response = new ServiceResponse<FanArt>();
             try
             {
-                var list = fanArtRepository.TableNoTracking.Where(expression).ToList();
+                var list = fanArtRepository.IncludeMany(x => x.Users).Where(expression).ToList();
                 response.List = list;
                 response.Count = list.Count;
                 response.IsSuccessful = true;
@@ -98,13 +105,28 @@ namespace AnimeMovie.Business.Concrete
             return response;
         }
 
-        public ServiceResponse<FanArt> getPaginatedFanArt(Expression<Func<FanArt, bool>> expression, int pageNo, int ShowCount)
+        public ServiceResponse<FanArtModels> getPaginatedFanArt(Expression<Func<FanArt, bool>> expression, int pageNo, int ShowCount)
         {
-            var response = new ServiceResponse<FanArt>();
+            var response = new ServiceResponse<FanArtModels>();
             try
             {
-                var list = fanArtRepository.Table.Where(expression).ToList();
-                response.List = list.Skip((pageNo - 1) * ShowCount).Take(ShowCount).ToList();
+                List<FanArtModels> fmList = new List<FanArtModels>();
+                var list = fanArtRepository.IncludeMany(x => x.Users).Where(expression).ToList();
+
+                foreach (var item in list.Skip((pageNo - 1) * ShowCount).Take(ShowCount).ToList())
+                {
+                    FanArtModels fm = new FanArtModels(item);
+                    if (fm.Type == Entites.Type.Manga)
+                    {
+                        fm.Manga = mangaService.get(x => x.ID == item.ContentID).Entity;
+                    }
+                    else
+                    {
+                        fm.Anime = animeService.get(x => x.ID == item.ContentID).Entity;
+                    }
+                    fmList.Add(fm);
+                }
+                response.List = fmList;
                 int page = 0;
                 var totalFanArt = list.Count();
                 if (totalFanArt % ShowCount > 0)

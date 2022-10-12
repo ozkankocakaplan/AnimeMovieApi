@@ -97,19 +97,23 @@ namespace AnimeMovie.API.Controllers
         }
         [HttpPost]
         [Roles(Roles = RolesAttribute.AdminOrModerator)]
-        [Route("/updateCategoryType/{contentID}")]
-        public IActionResult updateCategoryType([FromBody] List<CategoryType> categories, int contentID)
+        [Route("/updateCategoryType")]
+        public IActionResult updateCategoryType([FromBody] List<CategoryType> categories)
         {
-            var list = categoryTypeService.getList(x => x.ContentID == contentID);
-            if (list.Count != 0)
+
+            if (categories != null && categories.Count != 0)
             {
-                foreach (var item in list.List)
+                var list = categoryTypeService.getList(x => x.ContentID == categories.Select(x => x.ContentID).FirstOrDefault() && x.Type == categories.Select(x => x.Type).FirstOrDefault());
+                if (list != null && list.Count != 0)
                 {
-                    var check = categories.Where(x => x.ID == item.ID);
-                    if (check == null)
+                    foreach (var item in list.List)
                     {
                         categoryTypeService.delete(x => x.ID == item.ID);
                     }
+                }
+                foreach (var category in categories)
+                {
+                    categoryTypeService.add(category);
                 }
             }
             return Ok();
@@ -121,6 +125,7 @@ namespace AnimeMovie.API.Controllers
             var response = categoryTypeService.getList(x => x.ContentID == contentID && x.Type == (Type)type);
             return Ok(response);
         }
+
         [HttpGet]
         [Route("/getCategoryTypes")]
         public IActionResult getCategoryTypes()

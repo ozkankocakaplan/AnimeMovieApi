@@ -16,14 +16,27 @@ namespace AnimeMovie.API.Controllers
         private readonly IAnnouncementService announcementService;
         private readonly ISiteDescriptionService siteDescriptionService;
         private readonly ISocialMediaAccountService socialMediaAccountService;
+        private readonly IUsersService usersService;
         public AdminController(IAnnouncementService announcement,
             ISiteDescriptionService siteDescription,
-            ISocialMediaAccountService socialMediaAccount)
+            ISocialMediaAccountService socialMediaAccount,
+            IUsersService users)
         {
+            usersService = users;
             announcementService = announcement;
             siteDescriptionService = siteDescription;
             socialMediaAccountService = socialMediaAccount;
         }
+        #region User
+        [HttpGet]
+        [Roles(Roles = RolesAttribute.AdminOrModerator)]
+        [Route("/getSearchDetailsUser/{search}")]
+        public IActionResult getSearchDetailsUser(string search)
+        {
+            var response = usersService.getList(x => x.UserName.ToLower().Contains(search.ToLower()));
+            return Ok(response);
+        }
+        #endregion
         #region Announcement
         [HttpPut]
         [Route("/updateAnnouncement")]
@@ -33,9 +46,9 @@ namespace AnimeMovie.API.Controllers
             var response = announcementService.update(announcement);
             return Ok(response);
         }
-        [Route("/getAnnouncement")]
+        [Route("/getAnnouncements")]
         [HttpGet]
-        public IActionResult getAnnouncement()
+        public IActionResult getAnnouncements()
         {
             var response = announcementService.getList();
             return Ok(response);
@@ -43,8 +56,8 @@ namespace AnimeMovie.API.Controllers
         #endregion
         #region SiteDescription
         [HttpGet]
-        [Route("/getSiteDescription")]
-        public IActionResult getSiteDescription()
+        [Route("/getSiteDescriptions")]
+        public IActionResult getSiteDescriptions()
         {
             var response = siteDescriptionService.getList();
             return Ok(response);
@@ -109,12 +122,12 @@ namespace AnimeMovie.API.Controllers
         public IActionResult deleteSocialMediaAccount(int id)
         {
             var role = Handler.RolType(HttpContext);
-            if ((RoleType)role == RoleType.Admin)
+            if (role == "Admin")
             {
                 var response = socialMediaAccountService.delete(x => x.ID == id);
                 return Ok(response);
             }
-            if ((RoleType)role == RoleType.Moderator)
+            if (role == "Moderator")
             {
                 var response = socialMediaAccountService.delete(x => x.UserID == id);
                 return Ok(response);

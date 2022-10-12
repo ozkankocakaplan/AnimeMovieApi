@@ -1,8 +1,11 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace AnimeMovie.Entites
 {
     public class Manga : BaseEntity
     {
+        public int AnimeID { get; set; }
         public string? Image { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }

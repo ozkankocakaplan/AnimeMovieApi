@@ -14,13 +14,13 @@ namespace AnimeMovie.API
                 return (int)id;
             return 0;
         }
-        public static int RolType(HttpContext httpContext)
+        public static string RolType(HttpContext httpContext)
         {
             var identity = (ClaimsIdentity)httpContext.User.Identity;
-            int? id = Convert.ToInt32(identity.Claims.Where(x => x.Type == "Role").Select(x => x.Value).SingleOrDefault());
+            string id = identity.Claims.Where(x => x.Type == "Role").Select(x => x.Value).SingleOrDefault();
             if (id != null)
-                return (int)id;
-            return 0;
+                return (string)id;
+            return "";
         }
         public static string RandomData()
         {

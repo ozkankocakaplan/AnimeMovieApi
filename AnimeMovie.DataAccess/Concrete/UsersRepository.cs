@@ -15,7 +15,8 @@ namespace AnimeMovie.DataAccess.Concrete
         public Users addUser(Users user)
         {
             var userNameCheck = get(x => x.UserName == user.UserName);
-            if (userNameCheck == null)
+            var emailCheck = get(x => x.Email == user.Email);
+            if (userNameCheck == null && emailCheck == null)
             {
                 Create(user);
                 return user;
@@ -66,6 +67,19 @@ namespace AnimeMovie.DataAccess.Concrete
                 {
                     return null;
                 }
+            }
+            return user;
+        }
+
+        public Users updateRole(RoleType roleType, int userID)
+        {
+            var user = get(x => x.ID == userID);
+            if (user != null)
+            {
+                user.RoleType = roleType;
+                movieDbContext.Users.Attach(user);
+                movieDbContext.Entry(user).Property(x => x.RoleType).IsModified = true;
+                movieDbContext.SaveChanges();
             }
             return user;
         }

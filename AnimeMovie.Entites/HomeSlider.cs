@@ -6,7 +6,7 @@ namespace AnimeMovie.Entites
         public string Image { get; set; }
         public string SliderTitle { get; set; }
         public string Description { get; set; }
-        public int DisplayOrder { get; set; }
+        public string Url { get; set; }
         public bool isDisplay { get; set; }
     }
 }

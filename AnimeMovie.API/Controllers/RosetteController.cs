@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AnimeMovie.API.Models;
+using AnimeMovie.Business;
 using AnimeMovie.Business.Abstract;
 using AnimeMovie.Entites;
 using Microsoft.AspNetCore.Mvc;
@@ -17,9 +19,18 @@ namespace AnimeMovie.API.Controllers
         private readonly IUserRosetteService userRosetteService;
         private readonly IRosetteContentService rosetteContentService;
         private readonly IWebHostEnvironment webHostEnvironment;
+        private readonly IAnimeEpisodesService animeEpisodesService;
+        private readonly IMangaEpisodesService mangaEpisodesService;
+        private readonly IAnimeService animeService;
+        private readonly IMangaService mangaService;
         public RosetteController(IRosetteService rosette, IUserRosetteService userRosette, IWebHostEnvironment webHost,
-            IRosetteContentService rosetteContent)
+            IRosetteContentService rosetteContent, IAnimeEpisodesService animeEpisodes, IMangaEpisodesService mangaEpisodes, IAnimeService anime,
+            IMangaService manga)
         {
+            animeService = anime;
+            mangaService = manga;
+            animeEpisodesService = animeEpisodes;
+            mangaEpisodesService = mangaEpisodes;
             rosetteService = rosette;
             userRosetteService = userRosette;
             webHostEnvironment = webHost;
@@ -33,6 +44,7 @@ namespace AnimeMovie.API.Controllers
         {
             if (rosette.Name.Length != 0)
             {
+                rosette.Img = "";
                 if (img != null && img.Length != 0)
                 {
                     var guid = Guid.NewGuid().ToString();
@@ -75,10 +87,22 @@ namespace AnimeMovie.API.Controllers
         [HttpDelete]
         [Route("/deleteRosette")]
         [Roles(Roles = RolesAttribute.AdminOrModerator)]
-        public IActionResult deleteRosette(int id)
+        public IActionResult deleteRosette([FromBody] List<int> rosettes)
         {
-            var response = rosetteService.delete(x => x.ID == id);
-            return Ok(response);
+            foreach (var rosette in rosettes)
+            {
+                var rosetteContents = rosetteContentService.getList(x => x.RosetteID == rosette);
+                if (rosetteContents.Count != 0)
+                {
+                    foreach (var content in rosetteContents.List)
+                    {
+                        rosetteContentService.delete(x => x.ID == content.ID);
+                    }
+                }
+                var response = rosetteService.delete(x => x.ID == rosette);
+            }
+
+            return Ok();
         }
         [HttpGet]
         [Route("/getRosettes")]
@@ -91,8 +115,80 @@ namespace AnimeMovie.API.Controllers
         [Route("/getRosette/{id}")]
         public IActionResult getRosette(int id)
         {
+            RosetteModels rosetteModels = new RosetteModels();
+
             var response = rosetteService.get(x => x.ID == id);
+            if (response.Entity != null)
+            {
+                rosetteModels.Rosette = response.Entity;
+                var rosetteContents = rosetteContentService.getList(X => X.RosetteID == id);
+                rosetteModels.RosetteContents = rosetteContents.List.ToList();
+                if (rosetteContents.Count != 0)
+                {
+                    var _response = new ServiceResponse<RosetteModels>();
+                    List<MangaEpisodes> mangaEpisodes = new List<MangaEpisodes>();
+                    List<AnimeEpisodes> animeEpisodes = new List<AnimeEpisodes>();
+                    foreach (var content in rosetteContents.List)
+                    {
+                        if (content.Type == Type.Anime)
+                        {
+                            if (rosetteModels.Anime == null)
+                            {
+                                rosetteModels.Anime = animeService.get(x => x.ID == content.ContentID).Entity;
+                            }
+
+                            var animeEpisode = animeEpisodesService.get(x => x.ID == content.EpisodesID && x.AnimeID == rosetteModels.Anime.ID).Entity;
+
+                            if (animeEpisode != null)
+                            {
+                                animeEpisodes.Add(animeEpisode);
+                            }
+                        }
+                        else
+                        {
+                            if (rosetteModels.Manga == null)
+                            {
+                                rosetteModels.Manga = mangaService.get(x => x.ID == content.ContentID).Entity;
+                            }
+                            var mangaEpisode = mangaEpisodesService.get(x => x.ID == content.EpisodesID && x.MangaID == rosetteModels.Manga.ID).Entity;
+
+                            if (mangaEpisode != null)
+                            {
+                                mangaEpisodes.Add(mangaEpisode);
+                            }
+                        }
+                    }
+                    rosetteModels.AnimeEpisodes = animeEpisodes;
+                    rosetteModels.MangaEpisodes = mangaEpisodes;
+                    _response.Entity = rosetteModels;
+                    _response.IsSuccessful = true;
+                    return Ok(_response);
+                }
+            }
+
             return Ok(response);
+        }
+
+        [HttpPut]
+        [Route("/updateRosetteImg/{rosetteID}")]
+        [Roles(Roles = RolesAttribute.AdminOrModerator)]
+        public IActionResult updateRosetteImg([FromForm] IFormFile file, int rosetteID)
+        {
+            if (file != null && file.Length != 0)
+            {
+                var rosette = rosetteService.get(x => x.ID == rosetteID).Entity;
+                var guid = Guid.NewGuid().ToString();
+                var patch = webHostEnvironment.WebRootPath + "/image/";
+                using (FileStream fs = System.IO.File.Create(patch + guid + file.FileName))
+                {
+                    file.CopyTo(fs);
+                    fs.Flush();
+                }
+                rosette.Img = "/image/" + guid + file.FileName;
+                var response = rosetteService.update(rosette);
+                return Ok(response);
+            }
+            return BadRequest();
         }
         #endregion
 
@@ -171,37 +267,34 @@ namespace AnimeMovie.API.Controllers
             }
             return Ok();
         }
-        [Route("/updateRosetteContent/{contentID}/{type}")]
+        [Route("/updateRosetteContent/{rosetteID}")]
         [HttpPut]
         [Roles(Roles = RolesAttribute.AdminOrModerator)]
-        public IActionResult updateRosetteContent([FromBody] List<RosetteContent> rosetteContents,  int contentID, int type)
+        public IActionResult updateRosetteContent([FromBody] List<RosetteContent> rosetteContents, int rosetteID)
         {
 
             if (rosetteContents.Count != 0)
             {
-                var rosetteID = rosetteContents.Select(x => x.RosetteID).FirstOrDefault();
-                var _contents = rosetteContentService.getList(x => x.RosetteID == rosetteID);
-                var rosette = rosetteService.get(x => x.ID == rosetteID);
-                if (rosette.Entity != null)
+                var response = new ServiceResponse<RosetteContent>();
+                var oldList = rosetteContentService.getList(x => x.RosetteID == rosetteID);
+                if (oldList.Count != 0)
                 {
-                    rosette.Entity.ContentID = contentID;
-                    rosette.Entity.Type = (Type)type;
-                }
-                if (_contents.Count != 0)
-                {
-                    foreach (var item in _contents.List)
+                    foreach (var content in oldList.List)
                     {
-                        rosetteContentService.delete(x => x.RosetteID == item.RosetteID);
+                        rosetteContentService.delete(x => x.ID == content.ID);
                     }
                 }
-                foreach (var item in rosetteContents)
+                if (rosetteContents != null && rosetteContents.Count != 0)
                 {
-                    var response = rosetteContentService.add(item);
+                    foreach (var content in rosetteContents)
+                    {
+                        rosetteContentService.add(content);
+                    }
                 }
-                return Ok(rosetteContents);
+                response.List = rosetteContents;
+                response.IsSuccessful = true;
+                return Ok(response);
             }
-
-
             return BadRequest();
         }
         [Route("/getRosetteContent/{rosetteID}")]

@@ -1,23 +1,11 @@
 ﻿<Properties StartupConfiguration="{36613161-7983-4322-990B-F567FDAA2016}|Default">
-  <MultiItemStartupConfigurations />
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
-  <MonoDevelop.Ide.DebuggingService.Breakpoints>
-    <BreakpointStore>
-      <Breakpoint file="/Users/ozkan/Projects/AnimeMovie/AnimeMovie.API/Controllers/MangaController.cs" relfile="AnimeMovie.API/Controllers/MangaController.cs" line="55" column="1" />
-    </BreakpointStore>
-  </MonoDevelop.Ide.DebuggingService.Breakpoints>
-  <MonoDevelop.Ide.ItemProperties.AnimeMovie.API PreferredExecutionTarget="/Applications/Safari.app" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="AnimeMovie.API/Controllers/MangaController.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="AnimeMovie.API/Controllers/RosetteController.cs">
     <Files>
-      <File FileName="AnimeMovie.Entites/MangaEpisodes.cs" />
-      <File FileName="AnimeMovie.Entites/MangaEpisodeContent.cs" />
-      <File FileName="AnimeMovie.API/Controllers/MangaController.cs" Line="200" Column="57" />
-      <File FileName="AnimeMovie.Business/Concrete/MangaEpisodesManager.cs" />
-      <File FileName="AnimeMovie.Business/Concrete/MangaEpisodeContentManager.cs" />
-      <File FileName="AnimeMovie.DataAccess/GenericRepository.cs" />
+      <File FileName="AnimeMovie.API/Controllers/AdminController.cs" />
+      <File FileName="AnimeMovie.Entites/UserRosette.cs" />
       <File FileName="AnimeMovie.DataAccess/MovieDbContext.cs" />
-      <File FileName="AnimeMovie.Business/ServiceResponse.cs" Line="13" Column="1" />
+      <File FileName="AnimeMovie.API/Controllers/RosetteController.cs" Line="68" Column="10" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
@@ -26,10 +14,24 @@
             <Node name="AnimeMovie.API" expanded="True">
               <Node name="Controllers" expanded="True" />
             </Node>
-            <Node name="AnimeMovie.Business" expanded="True" />
+            <Node name="AnimeMovie.Business" expanded="True">
+              <Node name="Abstract" expanded="True" />
+              <Node name="Concrete" expanded="True" />
+              <Node name="Models" expanded="True" />
+            </Node>
+            <Node name="AnimeMovie.DataAccess" expanded="True" />
+            <Node name="AnimeMovie.Entites" expanded="True" />
           </Node>
         </State>
       </Pad>
     </Pads>
   </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.ItemProperties.AnimeMovie.API PreferredExecutionTarget="/Applications/Safari.app" />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore>
+      <Breakpoint file="/Users/ozkan/Projects/AnimeMovie/AnimeMovie.API/Controllers/HomeSliderController.cs" relfile="AnimeMovie.API/Controllers/HomeSliderController.cs" line="53" column="1" />
+    </BreakpointStore>
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MultiItemStartupConfigurations />
 </Properties>

@@ -15,6 +15,7 @@ namespace AnimeMovie.Entites
         public DateTime WarningDate { get; set; }
         public string ComingSoonInfo { get; set; }
         public DateTime ComingSoonDate { get; set; }
+        public string About { get; set; }
     }
 }
 

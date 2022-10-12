@@ -125,6 +125,13 @@ namespace AnimeMovie.API.Controllers
             return Ok(response);
         }
         [HttpGet]
+        [Route("/getSearchDetailsMangas/{text}")]
+        public IActionResult getSearchDetailsMangas(string text)
+        {
+            var response = mangaService.getList(x => x.Name.ToLower().Contains(text.ToLower()));
+            return Ok(response);
+        }
+        [HttpGet]
         [Route("/getPaginatedManga/{pageNo}/{showCount}")]
         public IActionResult getPaginatedManga(int pageNo, int showCount)
         {
@@ -172,10 +179,17 @@ namespace AnimeMovie.API.Controllers
             return BadRequest();
         }
         [HttpGet]
-        [Route("/getMangaEpisodes/{mangaID}")]
-        public IActionResult getMangaEpisodes(int mangaID)
+        [Route("/getMangaEpisodesByMangaID/{mangaID}")]
+        public IActionResult getMangaEpisodesByMangaID(int mangaID)
         {
             var response = mangaEpisodesService.getList(x => x.MangaID == mangaID);
+            return Ok(response);
+        }
+        [HttpGet]
+        [Route("/getMangaEpisodes")]
+        public IActionResult getMangaEpisodes()
+        {
+            var response = mangaEpisodesService.getList();
             return Ok(response);
         }
         [HttpGet]

@@ -52,6 +52,10 @@ namespace AnimeMovie.DataAccess
         public DbSet<AnimeImages> AnimeImages { get; set; }
         public DbSet<MangaImages> MangaImages { get; set; }
         public DbSet<CategoryType> CategoryTypes { get; set; }
+        public DbSet<RosetteContent> RosetteContents { get; set; }
+        public DbSet<Favorite> Favorites { get; set; }
+        public DbSet<UserList> userLists { get; set; }
+        public DbSet<UserListContents> UserListContents { get; set; }
     }
 }
 
