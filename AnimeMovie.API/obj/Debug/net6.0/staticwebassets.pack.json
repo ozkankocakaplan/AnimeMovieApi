@@ -5,8 +5,36 @@
       "PackagePath": "staticwebassets/.DS_Store"
     },
     {
+      "Id": "/Users/ozkan/Projects/AnimeMovie/AnimeMovie.API/wwwroot/anime/190d56ac-f303-4be8-9160-2c59fcc8683bviewImage.png",
+      "PackagePath": "staticwebassets/anime/190d56ac-f303-4be8-9160-2c59fcc8683bviewImage.png"
+    },
+    {
+      "Id": "/Users/ozkan/Projects/AnimeMovie/AnimeMovie.API/wwwroot/anime/2b36e1e4-5db5-4a22-aa4c-bef8069e58f4movieCover.png",
+      "PackagePath": "staticwebassets/anime/2b36e1e4-5db5-4a22-aa4c-bef8069e58f4movieCover.png"
+    },
+    {
+      "Id": "/Users/ozkan/Projects/AnimeMovie/AnimeMovie.API/wwwroot/anime/e89e55d3-f2a2-4357-ab67-a86b46842f1bimage1.png",
+      "PackagePath": "staticwebassets/anime/e89e55d3-f2a2-4357-ab67-a86b46842f1bimage1.png"
+    },
+    {
+      "Id": "/Users/ozkan/Projects/AnimeMovie/AnimeMovie.API/wwwroot/anime/eefcc7d2-4192-4189-9bd4-316f00cfbc6efe31dede-a32c-4248-96f9-348fb7e4383emovieImg1.png",
+      "PackagePath": "staticwebassets/anime/eefcc7d2-4192-4189-9bd4-316f00cfbc6efe31dede-a32c-4248-96f9-348fb7e4383emovieImg1.png"
+    },
+    {
+      "Id": "/Users/ozkan/Projects/AnimeMovie/AnimeMovie.API/wwwroot/anime/f0277cea-b1ba-4cbf-8c28-763d77d6d207movieImg1.png",
+      "PackagePath": "staticwebassets/anime/f0277cea-b1ba-4cbf-8c28-763d77d6d207movieImg1.png"
+    },
+    {
+      "Id": "/Users/ozkan/Projects/AnimeMovie/AnimeMovie.API/wwwroot/anime/fe31dede-a32c-4248-96f9-348fb7e4383emovieImg1.png",
+      "PackagePath": "staticwebassets/anime/fe31dede-a32c-4248-96f9-348fb7e4383emovieImg1.png"
+    },
+    {
       "Id": "/Users/ozkan/Projects/AnimeMovie/AnimeMovie.API/wwwroot/fanart/1-bgImage.png",
       "PackagePath": "staticwebassets/fanart/1-bgImage.png"
+    },
+    {
+      "Id": "/Users/ozkan/Projects/AnimeMovie/AnimeMovie.API/wwwroot/fanart/3-Ekran Resmi 2022-10-27 17.50.45.png",
+      "PackagePath": "staticwebassets/fanart/3-Ekran Resmi 2022-10-27 17.50.45.png"
     },
     {
       "Id": "/Users/ozkan/Projects/AnimeMovie/AnimeMovie.API/wwwroot/image/.DS_Store",
@@ -23,6 +51,10 @@
     {
       "Id": "/Users/ozkan/Projects/AnimeMovie/AnimeMovie.API/wwwroot/image/33f1c00d-86af-48e4-bc48-572f4bf31c5bdiscover-icon-22.jpg.png",
       "PackagePath": "staticwebassets/image/33f1c00d-86af-48e4-bc48-572f4bf31c5bdiscover-icon-22.jpg.png"
+    },
+    {
+      "Id": "/Users/ozkan/Projects/AnimeMovie/AnimeMovie.API/wwwroot/image/af035a27-ded6-4826-aa0a-3797c17a38babgImage.png",
+      "PackagePath": "staticwebassets/image/af035a27-ded6-4826-aa0a-3797c17a38babgImage.png"
     },
     {
       "Id": "/Users/ozkan/Projects/AnimeMovie/AnimeMovie.API/wwwroot/image/c89b4911-bdbd-4b56-9426-a1eb64a7ec07rosette3.png",
@@ -43,6 +75,22 @@
     {
       "Id": "/Users/ozkan/Projects/AnimeMovie/AnimeMovie.API/wwwroot/image/e83f4f79-ec44-4b43-8a5f-f55576daa0fdhomePage2.jpeg",
       "PackagePath": "staticwebassets/image/e83f4f79-ec44-4b43-8a5f-f55576daa0fdhomePage2.jpeg"
+    },
+    {
+      "Id": "/Users/ozkan/Projects/AnimeMovie/AnimeMovie.API/wwwroot/manga/c5894493-d474-475e-8e03-4b705427110a190d56ac-f303-4be8-9160-2c59fcc8683bviewImage.png",
+      "PackagePath": "staticwebassets/manga/c5894493-d474-475e-8e03-4b705427110a190d56ac-f303-4be8-9160-2c59fcc8683bviewImage.png"
+    },
+    {
+      "Id": "/Users/ozkan/Projects/AnimeMovie/AnimeMovie.API/wwwroot/user/37ae2eb1-1f3f-4492-9f26-1190babdb5ecprofilePhoto.png",
+      "PackagePath": "staticwebassets/user/37ae2eb1-1f3f-4492-9f26-1190babdb5ecprofilePhoto.png"
+    },
+    {
+      "Id": "/Users/ozkan/Projects/AnimeMovie/AnimeMovie.API/wwwroot/user/a7dfeb22-b094-43fb-9842-d1dee0ef3749profilePhoto.png",
+      "PackagePath": "staticwebassets/user/a7dfeb22-b094-43fb-9842-d1dee0ef3749profilePhoto.png"
+    },
+    {
+      "Id": "/Users/ozkan/Projects/AnimeMovie/AnimeMovie.API/wwwroot/user/d0f8f5bd-e653-493c-9ffc-ee920ed9510dprofilePhoto.png",
+      "PackagePath": "staticwebassets/user/d0f8f5bd-e653-493c-9ffc-ee920ed9510dprofilePhoto.png"
     },
     {
       "Id": "obj/Debug/net6.0/staticwebassets/msbuild.AnimeMovie.API.Microsoft.AspNetCore.StaticWebAssets.props",

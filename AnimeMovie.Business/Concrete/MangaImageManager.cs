@@ -49,6 +49,7 @@ namespace AnimeMovie.Business.Concrete
             var response = new ServiceResponse<MangaImages>();
             try
             {
+                response.Entity = mangaImageRepository.get(expression);
                 response.IsSuccessful = true;
             }
             catch (Exception ex)
@@ -64,6 +65,8 @@ namespace AnimeMovie.Business.Concrete
             var response = new ServiceResponse<MangaImages>();
             try
             {
+                response.List = mangaImageRepository.GetAll().ToList();
+                response.Count = mangaImageRepository.Count();
                 response.IsSuccessful = true;
             }
             catch (Exception ex)

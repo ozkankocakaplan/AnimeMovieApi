@@ -24,7 +24,7 @@ namespace AnimeMovie.API.Controllers
         #region UserComplaint
         [HttpPost]
         [Route("/addComplaint")]
-        [Roles(Roles = RolesAttribute.User)]
+        [Roles(Roles = RolesAttribute.All)]
         public IActionResult addComplaint([FromBody] ComplaintList complaintList)
         {
             var userID = Handler.UserID(HttpContext);
@@ -40,7 +40,7 @@ namespace AnimeMovie.API.Controllers
         [Roles(Roles = RolesAttribute.AdminOrModerator)]
         public IActionResult getComplaints()
         {
-            var response = complaintListService.getList();
+            var response = complaintListService.getComplaintListModels();
             return Ok(response);
         }
         [HttpGet]
@@ -51,6 +51,21 @@ namespace AnimeMovie.API.Controllers
             var userID = Handler.UserID(HttpContext);
             var response = complaintListService.getList(x => x.ComplainantID == userID);
             return Ok(response);
+        }
+        [HttpDelete]
+        [Route("/deleteComplaint")]
+        [Roles(Roles = RolesAttribute.AdminOrModerator)]
+        public IActionResult deleteComplaint([FromBody] List<int> list)
+        {
+            if (list != null && list.Count != 0)
+            {
+                foreach (var item in list)
+                {
+                    complaintListService.delete(x => x.ID == item);
+                }
+                return Ok();
+            }
+            return BadRequest();
         }
         #endregion
         #region ContentComplaint

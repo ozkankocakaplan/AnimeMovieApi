@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using AnimeMovie.API.Models;
+using AnimeMovie.Business;
 using AnimeMovie.Business.Abstract;
 using AnimeMovie.Entites;
 using Microsoft.AspNetCore.Authorization;
@@ -14,23 +16,34 @@ namespace AnimeMovie.API.Controllers
     {
         private readonly IWebHostEnvironment webHostEnvironment;
         private readonly IAnimeService animeService;
-        private readonly IAnimeRatingService animeRatingService;
+        private readonly IRatingsService ratingsService;
         private readonly IAnimeSeasonService animeSeasonService;
         private readonly IAnimeSeasonMusicService animeSeasonMusicService;
         private readonly IAnimeEpisodesService animeEpisodesService;
         private readonly IEpisodesService episodesService;
         private readonly ICategoryTypeService categoryTypeService;
-        public AnimeController(IWebHostEnvironment webHost,
-            IAnimeService anime, IAnimeRatingService animeRating, IAnimeSeasonService animeSeason,
+        private readonly IAnimeImageService animeImageService;
+        private readonly IContentNotificationService contentNotificationService;
+        private readonly ILikeService likeService;
+        private readonly IMangaService mangaService;
+        private readonly IAnimeListService animeListService;
+        public AnimeController(IWebHostEnvironment webHost, IMangaService manga,
+            IAnimeService anime, IRatingsService ratings, IAnimeSeasonService animeSeason,
             IAnimeSeasonMusicService seasonMusic, IAnimeEpisodesService animeEpisodes, IEpisodesService episodes,
-            ICategoryTypeService categoryType)
+            ILikeService like, IAnimeListService animeList,
+            ICategoryTypeService categoryType, IAnimeImageService animeImage, IContentNotificationService contentNotification)
         {
+            mangaService = manga;
+            animeListService = animeList;
+            likeService = like;
+            contentNotificationService = contentNotification;
+            animeImageService = animeImage;
             animeEpisodesService = animeEpisodes;
             categoryTypeService = categoryType;
             animeSeasonMusicService = seasonMusic;
             webHostEnvironment = webHost;
             animeService = anime;
-            animeRatingService = animeRating;
+            ratingsService = ratings;
             animeSeasonService = animeSeason;
             episodesService = episodes;
         }
@@ -49,7 +62,7 @@ namespace AnimeMovie.API.Controllers
                 {
                     animeImg.CopyTo(fs);
                     fs.Flush();
-                    anime.Img = "/image/" + guid + animeImg.FileName;
+                    anime.Img = "/anime/" + guid + animeImg.FileName;
                 }
             }
             var response = animeService.add(anime);
@@ -66,6 +79,33 @@ namespace AnimeMovie.API.Controllers
             }
 
             return Ok(response);
+        }
+        [HttpPut]
+        [Route("/updateAnimeImage/{ID}")]
+        [Roles(Roles = RolesAttribute.AdminOrModerator)]
+        public IActionResult updateAnimeImage([FromForm] IFormFile animeImg, int ID)
+        {
+            var anime = animeService.get(x => x.ID == ID).Entity;
+            if (animeImg != null && animeImg.Length != 0 && anime != null)
+            {
+                string guid = Guid.NewGuid().ToString();
+                string patch = webHostEnvironment.WebRootPath + "/anime/";
+                using (FileStream fs = System.IO.File.Create(patch + guid + animeImg.FileName))
+                {
+                    animeImg.CopyTo(fs);
+                    fs.Flush();
+
+                    var getAnime = anime.Img;
+                    anime.Img = "/anime/" + guid + animeImg.FileName;
+                    if (getAnime != null && getAnime.Length != 0)
+                    {
+                        System.IO.File.Delete(webHostEnvironment.WebRootPath + getAnime);
+                    }
+                    var response = animeService.update(anime);
+                    return Ok(response);
+                }
+            }
+            return BadRequest();
         }
         [HttpPut]
         [Route("/updateAnime")]
@@ -96,8 +136,36 @@ namespace AnimeMovie.API.Controllers
         [Route("/getAnimes")]
         public IActionResult getAnimes()
         {
-            var response = animeService.getList();
-            return Ok(response);
+            var list = animeService.getList();
+            if(list.Count != 0)
+            {
+                var response = new ServiceResponse<AnimeModels>();
+                List<AnimeModels> animeModels = new List<AnimeModels>();
+                foreach (var anime in list.List)
+                {
+                    AnimeModels animeModel = new AnimeModels();
+                 
+                    animeModel.Anime = anime;
+                    var animeEpisodes = animeEpisodesService.getList(x => x.AnimeID == anime.ID).List.ToList();                
+                    animeModel.AnimeEpisodes = animeEpisodes;
+                    animeModel.AnimeSeasons = animeSeasonService.getList(x => x.AnimeID == anime.ID).List.ToList();
+                    animeModel.Categories = categoryTypeService.getList(x => x.Type == Entites.Type.Anime && x.ContentID == anime.ID).List.ToList();
+                    animeModel.Arrangement = 1;
+                    animeModel.ContentNotification = contentNotificationService.get(x => x.ContentID == anime.ID && x.Type == Entites.Type.Anime).Entity;
+                    animeModel.LikeCount = likeService.getList(x => x.ContentID == anime.ID && x.Type == Entites.Type.Anime).List.ToList().Count;
+                    animeModel.ViewsCount = animeListService.getList(x => x.AnimeID == anime.ID && x.AnimeStatus == AnimeStatus.IWatched).List.ToList().Count;
+                    animeModel.Manga = mangaService.get(x => x.AnimeID == anime.ID).Entity;
+                    var ratingCount = ratingsService.getList(x => x.AnimeID == anime.ID).List.ToList().Count;
+                    animeModel.Rating = (ratingCount / 10) == 0 ? 1 : ratingCount / 10;
+
+                    animeModels.Add(animeModel);
+                }
+                response.List = animeModels;
+                response.Count = animeModels.Count;
+                response.IsSuccessful = true;
+                return Ok(response);
+            }
+            return BadRequest();
         }
         [HttpGet]
         [AllowAnonymous]
@@ -116,11 +184,54 @@ namespace AnimeMovie.API.Controllers
             return Ok(response);
         }
         [HttpGet]
+        [Roles(Roles = RolesAttribute.All)]
         [Route("/getAnime/{animeUrl}")]
         public IActionResult getAnime(string animeUrl)
         {
-            var response = animeService.get(x => x.SeoUrl == animeUrl);
-            return Ok(response);
+            var userID = Handler.UserID(HttpContext);
+            var getAnime = animeService.get(x => x.SeoUrl == animeUrl);
+            if (getAnime.Entity != null)
+            {
+                AnimeModels animeModel = new AnimeModels();
+                var response = new ServiceResponse<AnimeModels>();
+                animeModel.AnimeRating = ratingsService.get(x => x.UserID == userID).Entity;
+                animeModel.Anime = getAnime.Entity;
+                var animeEpisodes = animeEpisodesService.getList(x => x.AnimeID == getAnime.Entity.ID).List.ToList();
+                animeModel.Like = likeService.get(x => x.UserID == userID && x.ContentID == getAnime.Entity.ID && x.Type == Entites.Type.Anime).Entity;
+                animeModel.AnimeEpisodes = animeEpisodes;
+                animeModel.AnimeSeasonMusics = animeSeasonMusicService.getList(x => x.SeasonID == getAnime.Entity.ID).List.ToList();
+                animeModel.AnimeSeasons = animeSeasonService.getList(x => x.AnimeID == getAnime.Entity.ID).List.ToList();
+                animeModel.Categories = categoryTypeService.getList(x => x.Type == Entites.Type.Anime && x.ContentID == getAnime.Entity.ID).List.ToList();
+                animeModel.Arrangement = 1;
+                animeModel.ContentNotification = contentNotificationService.get(x => x.ContentID == getAnime.Entity.ID && x.Type == Entites.Type.Anime).Entity;
+                animeModel.LikeCount = likeService.getList(x => x.ContentID == getAnime.Entity.ID && x.Type == Entites.Type.Anime).List.ToList().Count;
+                animeModel.ViewsCount = animeListService.getList(x => x.AnimeID == getAnime.Entity.ID && x.AnimeStatus == AnimeStatus.IWatched).List.ToList().Count;
+                animeModel.Manga = mangaService.get(x => x.AnimeID == getAnime.Entity.ID).Entity;
+                animeModel.animeLists = animeListService.getList(x => x.AnimeID == getAnime.Entity.ID).List.ToList();
+                List<Episodes> episodes = new List<Episodes>();
+                foreach (var item in animeEpisodes)
+                {
+                    var episode = episodesService.get(x => x.EpisodeID == item.ID).Entity;
+                    if (episode != null)
+                    {
+                        episodes.Add(episode);
+                    }
+
+                }
+                animeModel.Episodes = episodes;
+                var ratingCount = ratingsService.getList(x => x.AnimeID == getAnime.Entity.ID).List.ToList().Count;
+                animeModel.Rating = ratingCount / 10;
+
+
+
+
+
+                response.Entity = animeModel;
+                response.IsSuccessful = true;
+
+                return Ok(response);
+            }
+            return BadRequest();
         }
         [HttpGet]
         [Route("/getAnimeByID/{animeID}")]
@@ -236,7 +347,55 @@ namespace AnimeMovie.API.Controllers
             return Ok(response);
         }
         #endregion
-
+        #region Anime Image
+        [HttpPost]
+        [Route("/addAnimeImage/{animeID}")]
+        [Roles(Roles = RolesAttribute.AdminOrModerator)]
+        public IActionResult addAnimeImage([FromForm] List<IFormFile> files, int animeID)
+        {
+            if (files != null && files.Count != 0)
+            {
+                foreach (var file in files)
+                {
+                    string guid = Guid.NewGuid().ToString();
+                    var patch = webHostEnvironment.WebRootPath + "/anime/";
+                    using (FileStream fs = System.IO.File.Create(patch + guid + file.FileName))
+                    {
+                        file.CopyTo(fs);
+                        fs.Flush();
+                    }
+                    animeImageService.add(new AnimeImages()
+                    {
+                        AnimeID = animeID,
+                        Img = "/anime/" + guid + file.FileName,
+                    });
+                }
+                return Ok();
+            }
+            return BadRequest();
+        }
+        [HttpDelete]
+        [Route("/deleteAnimeImage/{id}")]
+        [Roles(Roles = RolesAttribute.AdminOrModerator)]
+        public IActionResult deleteAnimeImage(int id)
+        {
+            var get = animeImageService.get(x => x.ID == id).Entity;
+            if (get != null)
+            {
+                System.IO.File.Delete(webHostEnvironment.WebRootPath + get.Img);
+                var response = animeImageService.delete(x => x.ID == id);
+                return Ok(response);
+            }
+            return BadRequest();
+        }
+        [HttpGet]
+        [Route("/getAnimeImageList/{animeID}")]
+        public IActionResult getAnimeImageList(int animeID)
+        {
+            var response = animeImageService.getList(x => x.AnimeID == animeID);
+            return Ok(response);
+        }
+        #endregion
     }
 }
 

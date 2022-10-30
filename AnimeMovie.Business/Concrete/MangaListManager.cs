@@ -3,6 +3,7 @@ using System.Linq.Expressions;
 using AnimeMovie.Business.Abstract;
 using AnimeMovie.DataAccess.Abstract;
 using AnimeMovie.Entites;
+using Microsoft.EntityFrameworkCore;
 
 namespace AnimeMovie.Business.Concrete
 {
@@ -83,7 +84,7 @@ namespace AnimeMovie.Business.Concrete
             var response = new ServiceResponse<MangaList>();
             try
             {
-                var list = mangaListRepository.TableNoTracking.Where(expression).ToList();
+                var list = mangaListRepository.TableNoTracking.Include(x => x.Manga).Include(x => x.MangaEpisode).Where(expression).ToList();
                 response.List = list;
                 response.Count = list.Count;
                 response.IsSuccessful = true;

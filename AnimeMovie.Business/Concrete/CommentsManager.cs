@@ -4,6 +4,7 @@ using AnimeMovie.Business.Abstract;
 using AnimeMovie.DataAccess.Abstract;
 using AnimeMovie.DataAccess.Concrete;
 using AnimeMovie.Entites;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 
 namespace AnimeMovie.Business.Concrete
@@ -69,7 +70,7 @@ namespace AnimeMovie.Business.Concrete
             var response = new ServiceResponse<Comments>();
             try
             {
-                response.List = commentsRepository.GetAll().ToList();
+                response.List = commentsRepository.TableNoTracking.Include(x => x.Users).ToList();
                 response.Count = commentsRepository.Count();
                 response.IsSuccessful = true;
             }
@@ -86,7 +87,7 @@ namespace AnimeMovie.Business.Concrete
             var response = new ServiceResponse<Comments>();
             try
             {
-                var list = commentsRepository.TableNoTracking.Where(expression).ToList();
+                var list = commentsRepository.TableNoTracking.Include(x=>x.Users).Where(expression).ToList();
                 response.List = list;
                 response.Count = list.Count;
                 response.IsSuccessful = true;

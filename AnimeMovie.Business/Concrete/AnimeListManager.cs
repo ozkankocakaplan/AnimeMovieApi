@@ -4,6 +4,7 @@ using AnimeMovie.Business.Abstract;
 using AnimeMovie.DataAccess.Abstract;
 using AnimeMovie.DataAccess.Concrete;
 using AnimeMovie.Entites;
+using Microsoft.EntityFrameworkCore;
 
 namespace AnimeMovie.Business.Concrete
 {
@@ -85,7 +86,7 @@ namespace AnimeMovie.Business.Concrete
             var response = new ServiceResponse<AnimeList>();
             try
             {
-                var list = animeListRepository.TableNoTracking.Where(expression).ToList();
+                var list = animeListRepository.TableNoTracking.Include(x => x.Anime).Include(x => x.AnimeEpisode).Where(expression).ToList();
                 response.List = list;
                 response.Count = list.Count();
                 response.IsSuccessful = true;

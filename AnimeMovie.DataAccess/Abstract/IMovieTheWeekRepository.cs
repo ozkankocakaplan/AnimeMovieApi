@@ -3,7 +3,7 @@ using AnimeMovie.Entites;
 
 namespace AnimeMovie.DataAccess.Abstract
 {
-    public interface IAnimeOfTheWeekRepository : IGenericRepository<AnimeOfTheWeek>
+    public interface IMovieTheWeekRepository : IGenericRepository<MovieTheWeek>
     {
     }
 }

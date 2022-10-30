@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using AnimeMovie.API.Models;
 using AnimeMovie.Business;
 using AnimeMovie.Business.Abstract;
@@ -18,7 +20,7 @@ namespace AnimeMovie.API.Controllers
     {
         private readonly IUsersService usersService;
         private readonly IWebHostEnvironment webHostEnvironment;
-        private readonly IAnimeRatingService animeRatingService;
+        private readonly IRatingsService ratingsService;
         private readonly IAnimeListService animeListService;
         private readonly IMangaListService mangaListService;
         private readonly IUserEmailVertificationService userEmailVertificationService;
@@ -36,23 +38,43 @@ namespace AnimeMovie.API.Controllers
         private readonly IUserRosetteService userRosetteService;
         private readonly IUserListService userListService;
         private readonly IUserListContentsService userListContentsService;
-        public UserController(IWebHostEnvironment webHost, IUsersService users, IAnimeRatingService animeRating,
-            IAnimeListService animeList,
+        private readonly IAnimeService animeService;
+        private readonly IMangaService mangaService;
+        private readonly ICategoryTypeService categoryTypeService;
+
+        private readonly IMovieTheWeekService movieTheWeekService;
+
+        private readonly IAnimeSeasonService animeSeasonService;
+        private readonly IAnimeEpisodesService animeEpisodesService;
+        private readonly IMangaEpisodesService mangaEpisodesService;
+
+        private readonly IContentNotificationService contentNotificationService;
+
+        public UserController(IWebHostEnvironment webHost, IUsersService users, IRatingsService ratings,
+            IAnimeListService animeList, IMovieTheWeekService movieTheWeek,
             IUserEmailVertificationService userEmailVertification,
             IUserForgotPasswordService userForgotPassword, IUserBlockListService userBlockList,
             IReviewService review, ICommentsService comments, INotificationService notification, IMangaListService mangaList,
             ILikeService like, IFanArtService fanArt, IUserMessageService userMessage, IUserLoginHistoryService userLoginHistory,
             IFavoriteService favorite, IRosetteContentService rosetteContent, IUserRosetteService userRosette,
-            IUserListService userList,
-            IUserListContentsService userListContents)
+            IUserListService userList, IAnimeSeasonService animeSeason, IAnimeEpisodesService animeEpisodes, IMangaEpisodesService mangaEpisodes,
+            IUserListContentsService userListContents, IAnimeService anime, IMangaService manga, ICategoryTypeService categoryType, IContentNotificationService contentNotification)
         {
+            movieTheWeekService = movieTheWeek;
+            contentNotificationService = contentNotification;
+            animeSeasonService = animeSeason;
+            animeEpisodesService = animeEpisodes;
+            mangaEpisodesService = mangaEpisodes;
+            categoryTypeService = categoryType;
+            animeService = anime;
+            mangaService = manga;
             userListService = userList;
             userListContentsService = userListContents;
             userRosetteService = userRosette;
             rosetteContentService = rosetteContent;
             webHostEnvironment = webHost;
             usersService = users;
-            animeRatingService = animeRating;
+            ratingsService = ratings;
             animeListService = animeList;
             userEmailVertificationService = userEmailVertification;
             userForgotPasswordService = userForgotPassword;
@@ -135,13 +157,13 @@ namespace AnimeMovie.API.Controllers
             return BadRequest();
         }
         [Roles(Roles = RolesAttribute.All)]
-        [Route("/updateUserInfo/{nameSurname}/{userName}")]
+        [Route("/updateUserInfo/{nameSurname}/{userName}/{about}")]
         [HttpPut]
-        public IActionResult updateUserInfo(string nameSurname, string userName)
+        public IActionResult updateUserInfo(string nameSurname, string userName, string about)
         {
             if (nameSurname.Length != 0 && userName.Length != 0)
             {
-                var response = usersService.updateUserInfo(nameSurname, userName, Handler.UserID(HttpContext));
+                var response = usersService.updateUserInfo(nameSurname, userName, about, Handler.UserID(HttpContext));
                 return Ok(response);
             }
             return BadRequest();
@@ -178,23 +200,22 @@ namespace AnimeMovie.API.Controllers
             }
             return BadRequest();
         }
-        [Roles(Roles = RolesAttribute.User)]
+        [Roles(Roles = RolesAttribute.All)]
         [Route("/updateImage")]
         [HttpPut]
-        public IActionResult updateImage([FromForm] IFormFile img)
+        public IActionResult updateImage([FromForm] IFormFile file)
         {
-            if (img != null && img.Length != 0)
+            if (file != null && file.Length != 0)
             {
                 var guid = Guid.NewGuid().ToString();
                 string patch = webHostEnvironment.WebRootPath + "/user/";
-                using (FileStream fs = System.IO.File.Create(patch + guid + img.FileName))
+                using (FileStream fs = System.IO.File.Create(patch + guid + file.FileName))
                 {
-                    img.CopyTo(fs);
+                    file.CopyTo(fs);
                     fs.Flush();
-                    var response = usersService.updateImage("/user/" + guid + img.FileName, Handler.UserID(HttpContext));
+                    var response = usersService.updateImage("/user/" + guid + file.FileName, Handler.UserID(HttpContext));
+                    return Ok(response);
                 }
-
-                return BadRequest();
             }
             return BadRequest();
         }
@@ -250,21 +271,66 @@ namespace AnimeMovie.API.Controllers
             var response = usersService.get(x => x.SeoUrl == seoUrl);
             if (response.Entity != null)
             {
-                var userResponse = new ServiceResponse<UserModels>();
-                UserModels userModels = new UserModels();
+                var userResponse = new ServiceResponse<UserFullModels>();
+                UserFullModels userModels = new UserFullModels();
                 var getUser = usersService.get(x => x.SeoUrl == seoUrl).Entity;
                 if (getUser != null)
                 {
+                    List<AnimeListModels> animeLists = new List<AnimeListModels>();
+                    List<MangaListModels> mangaLists = new List<MangaListModels>();
                     userModels.User = getUser;
                     userModels.Rosettes = userRosetteService.getList(x => x.UserID == getUser.ID).List.ToList();
-                    userModels.AnimeLists = animeListService.getList(x => x.UserID == getUser.ID).List.ToList();
-                    userModels.MangaLists = mangaListService.getList(x => x.UserID == getUser.ID).List.ToList();
+
+                    var animeList = animeListService.getList(x => x.UserID == getUser.ID).List.ToList();
+                    userModels.AnimeLists = animeList.DistinctBy(x => x.AnimeID).ToList();
+
+                    foreach (var item in animeList)
+                    {
+                        AnimeListModels anime = new AnimeListModels();
+                        anime.Anime = item.Anime;
+                        anime.AnimeList = item;
+                        anime.AnimeSeasons = animeSeasonService.getList(x => x.AnimeID == item.AnimeID).List.ToList();
+                        anime.Categories = categoryTypeService.getList(x => x.ContentID == item.AnimeID && x.Type == Type.Anime).List.ToList();
+                        var episodes = animeList.Where(x => x.AnimeID == item.AnimeID).DistinctBy(x => x.EpisodeID).ToList();
+                        anime.AnimeEpisodes = episodes.Select(x => x.AnimeEpisode).ToList();
+                        animeLists.Add(anime);
+                    }
+                    userModels.AnimeListModels = animeLists;
+
+                    var mangaList = mangaListService.getList(x => x.UserID == getUser.ID).List;
+                    userModels.MangaLists = mangaList.ToList();
+                    foreach (var item in mangaList.ToList())
+                    {
+                        MangaListModels manga = new MangaListModels();
+                        manga.Manga = item.Manga;
+                        manga.MangaList = item;
+                        manga.Categories = categoryTypeService.getList(x => x.ContentID == item.MangaID && x.Type == Type.Manga).List.ToList();
+                        var episodes = mangaList.Where(x => x.MangaID == item.MangaID).DistinctBy(x => x.EpisodeID).ToList();
+                        manga.MangaEpisodes = episodes.Select(x => x.MangaEpisode).ToList();
+                        mangaLists.Add(manga);
+                    }
+                    userModels.MangaListModels = mangaLists;
+
                     userModels.FanArts = fanArtService.getList(x => x.UserID == getUser.ID).List.ToList();
-                    userModels.Reviews = reviewService.getList(x => x.UserID == getUser.ID).List.ToList();
+                    var reviews = reviewService.getList(x => x.UserID == getUser.ID).List.ToList();
+                    List<ReviewsModels> reviewsModels = new List<ReviewsModels>();
+                    foreach (var review in reviews)
+                    {
+                        ReviewsModels models = new ReviewsModels(review);
+                        if (review.Type == Type.Manga)
+                        {
+                            models.Manga = mangaService.get(x => x.ID == review.ContentID).Entity;
+                        }
+                        if (review.Type == Type.Anime)
+                        {
+                            models.Anime = animeService.get(x => x.ID == review.ContentID).Entity;
+                        }
+                        reviewsModels.Add(models);
+                    }
+                    userModels.Reviews = reviewsModels;
+                    userModels.UserListModels = userListContentsService.getUserListModels(x => x.UserID == getUser.ID).List.ToList();
                     userModels.UserLists = userListService.getList(x => x.UserID == getUser.ID).List.ToList();
-                    userModels.UserListContents = userListContentsService.getList(x => x.UserID == getUser.ID).List.ToList();
-
-
+                    userModels.UserListContents = userListContentsService.getList().List.ToList();
                     userResponse.Entity = userModels;
                     userResponse.IsSuccessful = true;
                     return Ok(userResponse);
@@ -312,52 +378,52 @@ namespace AnimeMovie.API.Controllers
             return BadRequest();
         }
         #endregion
-        #region AnimeRating
+        #region Ratings
         [HttpPost]
-        [Roles(Roles = RolesAttribute.User)]
-        [Route("/addAnimeRating")]
-        public IActionResult addAnimeRating([FromBody] AnimeRating animeRating)
+        [Roles(Roles = RolesAttribute.All)]
+        [Route("/addRating")]
+        public IActionResult addRating([FromBody] Ratings animeRating)
         {
             var id = Handler.UserID(HttpContext);
             if (animeRating.AnimeID != 0 && id == animeRating.UserID)
             {
-                var response = animeRatingService.add(animeRating);
+                var response = ratingsService.add(animeRating);
                 return Ok(response);
             }
             return BadRequest();
         }
         [HttpPut]
-        [Roles(Roles = RolesAttribute.User)]
-        [Route("/updateAnimeRating")]
-        public IActionResult updateAnimeRating([FromBody] AnimeRating animeRating)
+        [Roles(Roles = RolesAttribute.All)]
+        [Route("/updateRating")]
+        public IActionResult updateAnimeRating([FromBody] Ratings animeRating)
         {
             var id = Handler.UserID(HttpContext);
             if (animeRating.AnimeID != 0 && animeRating.ID != 0 && animeRating.UserID == id)
             {
-                var response = animeRatingService.update(animeRating);
+                var response = ratingsService.update(animeRating);
                 return Ok(response);
             }
             return BadRequest();
         }
         [HttpDelete]
         [Roles(Roles = RolesAttribute.All)]
-        [Route("/deleteAnimeRatings/{id}")]
-        public IActionResult deleteAnimeRatings(int id)
+        [Route("/deleteRatings/{id}")]
+        public IActionResult deleteRatings(int id)
         {
-            var getAnimeRating = animeRatingService.get(x => x.ID == id && x.UserID == Handler.UserID(HttpContext));
+            var getAnimeRating = ratingsService.get(x => x.ID == id && x.UserID == Handler.UserID(HttpContext));
             if (getAnimeRating.Entity != null)
             {
-                var response = animeRatingService.delete(x => x.ID == id);
+                var response = ratingsService.delete(x => x.ID == id);
                 return Ok(response);
             }
             return BadRequest();
         }
         [HttpGet]
         [Roles(Roles = RolesAttribute.All)]
-        [Route("/getAnimeRatings/{animeID}")]
-        public IActionResult getAnimeRatings(int animeID)
+        [Route("/getRatings/{animeID}")]
+        public IActionResult getRatings(int animeID)
         {
-            var response = animeRatingService.getList(x => x.AnimeID == animeID);
+            var response = ratingsService.getList(x => x.AnimeID == animeID);
             return Ok(response);
         }
         #endregion
@@ -389,20 +455,27 @@ namespace AnimeMovie.API.Controllers
         #region UserBlockList
         [HttpPost]
         [Route("/addUserBlockList")]
-        [Roles(Roles = RolesAttribute.User)]
+        [Roles(Roles = RolesAttribute.All)]
         public IActionResult addUserBlockList([FromBody] UserBlockList user)
         {
             var userID = Handler.UserID(HttpContext);
             if (user.BlockID != 0 && userID == user.UserID)
             {
+                user.isBlocked = true;
                 var response = userBlockListService.add(user);
+                userBlockListService.add(new UserBlockList()
+                {
+                    BlockID = user.UserID,
+                    UserID = user.BlockID,
+                    isBlocked = false,
+                });
                 return Ok(response);
             }
             return BadRequest();
         }
         [HttpDelete]
         [Route("/deleteUserBlockList/{blockID}")]
-        [Roles(Roles = RolesAttribute.User)]
+        [Roles(Roles = RolesAttribute.All)]
         public IActionResult deleteUserBlockList(int blockID)
         {
             var userID = Handler.UserID(HttpContext);
@@ -414,32 +487,34 @@ namespace AnimeMovie.API.Controllers
             return BadRequest();
         }
         [HttpGet]
-        [Route("/getUserBlockList")]
-        [Roles(Roles = RolesAttribute.User)]
-        public IActionResult getUserBlockList()
+        [Route("/getUserBlockList/{userID}/{blockID}")]
+        [Roles(Roles = RolesAttribute.All)]
+        public IActionResult getUserBlockList(int blockID, int userID)
         {
-            var userID = Handler.UserID(HttpContext);
-            var response = userBlockListService.getList(x => x.UserID == userID);
+            var response = userBlockListService.getList(x => x.UserID == blockID || x.BlockID == userID);
             return Ok(response);
         }
         #endregion
         #region Comments
         [HttpPost]
         [Route("/addComment")]
-        [Roles(Roles = RolesAttribute.User)]
+        [Roles(Roles = RolesAttribute.All)]
         public IActionResult addComment([FromBody] Comments comment)
         {
             var userID = Handler.UserID(HttpContext);
             if (comment.ContentID != 0 && comment.Comment.Length != 0 && comment.UserID == userID)
             {
                 var response = commentsService.add(comment);
+                var comm = response.Entity;
+                comm.Users = usersService.get((x) => x.ID == comment.UserID).Entity;
+                response.Entity = comm;
                 return Ok(response);
             }
             return BadRequest();
         }
         [HttpDelete]
         [Route("/deleteComment/{commentID}/{type}")]
-        [Roles(Roles = RolesAttribute.User)]
+        [Roles(Roles = RolesAttribute.All)]
         public IActionResult deleteComment(int commentID, int type)
         {
             var userID = Handler.UserID(HttpContext);
@@ -447,18 +522,25 @@ namespace AnimeMovie.API.Controllers
             return Ok(response);
         }
         [HttpGet]
-        [Route("/getComments/{contentID}/{pageNo}/{showCount}")]
-        public IActionResult getComments(int contentID, int type, int pageNo = 1, int showCount = 10)
+        [Route("/getPaginatedComments/{contentID}/{pageNo}/{showCount}")]
+        public IActionResult getPaginatedComments(int contentID, int type, int pageNo = 1, int showCount = 10)
         {
             var response = commentsService.getPaginatedComments(x => x.ContentID == contentID && x.Type == (Type)type, pageNo, showCount);
             return Ok(response);
         }
-
+        [HttpGet]
+        [Route("/getComments/{contentID}/{type}")]
+        public IActionResult getComments(int contentID, int type)
+        {
+            var response = commentsService.getList();
+            response.List = response.List.Where(x => x.ContentID == contentID && x.Type == (Type)type).OrderByDescending(x => x.ID).ToList();
+            return Ok(response);
+        }
         #endregion
         #region Reviews
         [HttpPost]
         [Route("/addReviews")]
-        [Roles(Roles = RolesAttribute.User)]
+        [Roles(Roles = RolesAttribute.All)]
         public IActionResult addReview([FromBody] Review review)
         {
             var userID = Handler.UserID(HttpContext);
@@ -469,9 +551,22 @@ namespace AnimeMovie.API.Controllers
             }
             return BadRequest();
         }
-        [HttpPost]
+        [HttpPut]
+        [Route("/updateReviews")]
+        [Roles(Roles = RolesAttribute.All)]
+        public IActionResult updateReviews([FromBody] Review review)
+        {
+            var userID = Handler.UserID(HttpContext);
+            if (review.UserID == userID && review.ContentID != 0 && review.Message.Length != 0)
+            {
+                var response = reviewService.update(review);
+                return Ok(response);
+            }
+            return BadRequest();
+        }
+        [HttpDelete]
         [Route("/deleteReview/{reviewID}")]
-        [Roles(Roles = RolesAttribute.User)]
+        [Roles(Roles = RolesAttribute.All)]
         public IActionResult deleteReview(int reviewID)
         {
             var userID = Handler.UserID(HttpContext);
@@ -488,17 +583,17 @@ namespace AnimeMovie.API.Controllers
         #endregion
         #region Notifications
         [HttpGet]
-        [Route("/getNotifications/{pageNo}/{showCount}")]
-        [Roles(Roles = RolesAttribute.User)]
-        public IActionResult getNotifications(int pageNo = 1, int showCount = 10)
+        [Route("/getNotifications")]
+        [Roles(Roles = RolesAttribute.All)]
+        public IActionResult getNotifications()
         {
             var userID = Handler.UserID(HttpContext);
-            var response = notificationService.getPaginatedNotifications(x => x.UserID == userID, pageNo, showCount);
+            var response = notificationService.getList(x => x.UserID == userID);
             return Ok(response);
         }
         [HttpPut]
         [Route("/updateNotification/{notificationID}")]
-        [Roles(Roles = RolesAttribute.User)]
+        [Roles(Roles = RolesAttribute.All)]
         public IActionResult updateNotification(int notificationID)
         {
             var userID = Handler.UserID(HttpContext);
@@ -514,7 +609,7 @@ namespace AnimeMovie.API.Controllers
         }
         [HttpPost]
         [Route("/addNotification")]
-        [Roles(Roles = RolesAttribute.AdminOrModerator)]
+        [Roles(Roles = RolesAttribute.All)]
         public IActionResult addNotification([FromBody] Notification notification)
         {
             if (notification.NotificationMessage.Length != 0 && notification.NotificationType != 0)
@@ -528,21 +623,52 @@ namespace AnimeMovie.API.Controllers
 
         #region AnimeList
         [HttpPost]
+        [Route("/addAnimeLists")]
+        [Roles(Roles = RolesAttribute.All)]
+        public IActionResult addAnimeLists([FromBody] List<AnimeList> animeList)
+        {
+            var id = Handler.UserID(HttpContext);
+            foreach (var item in animeList)
+            {
+                if (id == item.UserID)
+                {
+                    var check = animeListService.get(x => x.EpisodeID == item.EpisodeID && x.AnimeID == item.AnimeID).Entity;
+                    if (check == null)
+                    {
+                        animeListService.add(item);
+                    }
+                }
+            }
+
+            return Ok(animeList);
+        }
+        [HttpPost]
         [Route("/addAnimeList")]
-        [Roles(Roles = RolesAttribute.User)]
+        [Roles(Roles = RolesAttribute.All)]
         public IActionResult addAnimeList([FromBody] AnimeList animeList)
         {
             var id = Handler.UserID(HttpContext);
-            if (animeList.AnimeID != 0 && animeList.UserID == id)
+            if (animeList.UserID == id)
             {
-                var response = animeListService.add(animeList);
-                return Ok(response);
+                var check = animeListService.get(x => x.EpisodeID == animeList.EpisodeID && x.AnimeID == animeList.AnimeID).Entity;
+                if (check == null)
+                {
+                    var response = animeListService.add(animeList);
+                    return Ok(response);
+                }
+                else
+                {
+                    animeListService.delete(x => x.EpisodeID == animeList.EpisodeID && x.AnimeID == animeList.AnimeID);
+                    var response = animeListService.add(animeList);
+                    return Ok(response);
+                }
+
             }
-            return BadRequest();
+            return BadRequest(animeList);
         }
         [HttpDelete]
         [Route("/deleteAnimeList/{id}")]
-        [Roles(Roles = RolesAttribute.User)]
+        [Roles(Roles = RolesAttribute.All)]
         public IActionResult deleteAnimeList(int id)
         {
             var userID = Handler.UserID(HttpContext);
@@ -551,7 +677,7 @@ namespace AnimeMovie.API.Controllers
         }
         [HttpGet]
         [Route("/getAnimeList")]
-        [Roles(Roles = RolesAttribute.User)]
+        [Roles(Roles = RolesAttribute.All)]
         public IActionResult getAnimeList()
         {
             var userID = Handler.UserID(HttpContext);
@@ -561,21 +687,46 @@ namespace AnimeMovie.API.Controllers
         #endregion
         #region MangaList
         [HttpPost]
+        [Route("/addMangaLists")]
+        [Roles(Roles = RolesAttribute.All)]
+        public IActionResult addMangaLists([FromBody] List<MangaList> mangaList)
+        {
+            var id = Handler.UserID(HttpContext);
+            foreach (var item in mangaList)
+            {
+                if (id == item.UserID)
+                {
+                    var check = mangaListService.get(x => x.EpisodeID == item.EpisodeID && x.MangaID == item.MangaID).Entity;
+                    if (check == null)
+                    {
+                        mangaListService.add(item);
+                    }
+                }
+            }
+
+            return Ok(mangaList);
+        }
+        [HttpPost]
         [Route("/addMangaList")]
-        [Roles(Roles = RolesAttribute.User)]
+        [Roles(Roles = RolesAttribute.All)]
         public IActionResult addMangaList([FromBody] MangaList mangaList)
         {
             var id = Handler.UserID(HttpContext);
-            if (mangaList.EpisodeID != 0 && mangaList.UserID == id)
+            if (id == mangaList.UserID)
             {
-                var response = mangaListService.add(mangaList);
-                return Ok(response);
+                var check = mangaListService.get(x => x.EpisodeID == mangaList.EpisodeID && x.MangaID == mangaList.MangaID).Entity;
+                if (check == null)
+                {
+                    var response = mangaListService.add(mangaList);
+                    return Ok(response);
+                }
             }
+
             return BadRequest();
         }
         [HttpDelete]
         [Route("/deleteMangaList/{id}")]
-        [Roles(Roles = RolesAttribute.User)]
+        [Roles(Roles = RolesAttribute.All)]
         public IActionResult deleteMangaList(int id)
         {
             var userID = Handler.UserID(HttpContext);
@@ -584,7 +735,7 @@ namespace AnimeMovie.API.Controllers
         }
         [HttpGet]
         [Route("/getMangaList")]
-        [Roles(Roles = RolesAttribute.User)]
+        [Roles(Roles = RolesAttribute.All)]
         public IActionResult getMangaList()
         {
             var userID = Handler.UserID(HttpContext);
@@ -596,14 +747,18 @@ namespace AnimeMovie.API.Controllers
         #region Like
         [HttpPost]
         [Route("/addLike")]
-        [Roles(Roles = RolesAttribute.User)]
+        [Roles(Roles = RolesAttribute.All)]
         public IActionResult addLike([FromBody] Like like)
         {
             var userID = Handler.UserID(HttpContext);
             if (like.ContentID != 0 && like.UserID == userID)
             {
-                var response = likeService.add(like);
-                return Ok(response);
+                var get = likeService.get(x => x.ContentID == like.ContentID && x.UserID == userID).Entity;
+                if (get == null)
+                {
+                    var response = likeService.add(like);
+                    return Ok(response);
+                }
             }
             return BadRequest();
         }
@@ -616,7 +771,7 @@ namespace AnimeMovie.API.Controllers
         }
         [HttpDelete]
         [Route("/deleteLike/{contentID}/{type}")]
-        [Roles(Roles = RolesAttribute.User)]
+        [Roles(Roles = RolesAttribute.All)]
         public IActionResult deleteLike(int contentID, int type)
         {
             var userID = Handler.UserID(HttpContext);
@@ -667,8 +822,6 @@ namespace AnimeMovie.API.Controllers
                 var response = fanArtService.delete(x => x.ID == id && x.UserID == userID);
                 return Ok(response);
             }
-
-
         }
         [Route("/getPaginatedFanArt/{animeID}/{pageNo}/{showCount}")]
         [HttpGet]
@@ -696,11 +849,25 @@ namespace AnimeMovie.API.Controllers
         #region Message
         [HttpGet]
         [Route("/getMessages")]
-        [Roles(Roles = RolesAttribute.User)]
+        [Roles(Roles = RolesAttribute.All)]
         public IActionResult getMessages()
         {
             var userID = Handler.UserID(HttpContext);
-            var response = userMessageService.getList(x => x.SenderID == userID || x.ReceiverID == userID);
+            var messageList = userMessageService.getList(x => x.SenderID == userID || x.ReceiverID == userID).List.Select(x => x.ReceiverID == userID ? x.SenderID : x.ReceiverID).Distinct().ToList();
+            var response = new ServiceResponse<UserMessageModel>();
+
+            
+            List<UserMessageModel> userMessageModels = new List<UserMessageModel>();
+            foreach (var message in messageList)
+            {
+                var user = usersService.get(x => x.ID == message).Entity;
+                UserMessageModel userMessage = new UserMessageModel(user);
+                userMessage.userMessages = userMessageService.getList((y) => y.SenderID == userID || y.ReceiverID == userID).List.ToList();
+                userMessageModels.Add(userMessage);
+            }
+            response.List = userMessageModels;
+            response.Count = userMessageModels.Count;
+            response.IsSuccessful = true;
             return Ok(response);
         }
         [HttpDelete]
@@ -747,6 +914,241 @@ namespace AnimeMovie.API.Controllers
         }
 
         #endregion
+
+        #region UserList
+        [HttpPost]
+        [Route("/addUserList")]
+        [Roles(RolesAttribute.All)]
+        public IActionResult addUserList([FromBody] UserList userList)
+        {
+            var response = userListService.add(userList);
+            return Ok(response);
+        }
+        [HttpPut]
+        [Route("/updateUserList")]
+        [Roles(RolesAttribute.All)]
+        public IActionResult updateUserList([FromBody] UserList userList)
+        {
+            var response = userListService.update(userList);
+            return Ok(response);
+        }
+        [HttpDelete]
+        [Route("/deleteUserList/{id}")]
+        [Roles(RolesAttribute.All)]
+        public IActionResult deleteUserList(int id)
+        {
+            var userID = Handler.UserID(HttpContext);
+            var response = userListService.delete(x => x.ID == id && x.UserID == userID);
+            return Ok(response);
+        }
+        #endregion
+        #region UserList Content
+        [HttpPost]
+        [Route("/addUserListContents")]
+        [Roles(Roles = RolesAttribute.All)]
+        public IActionResult addUserListContents([FromBody] List<UserListContents> userListContents)
+        {
+            foreach (var content in userListContents)
+            {
+                var check = userListContentsService.get(x => x.ListID == content.ListID && x.ContentID == content.ContentID && x.EpisodeID == content.EpisodeID && x.Type == content.Type).Entity;
+                if (check == null)
+                {
+                    userListContentsService.add(content);
+                }
+            }
+            return Ok(userListContents);
+        }
+        [HttpDelete]
+        [Route("/deleteUserListContent/{id}")]
+        [Roles(Roles = RolesAttribute.All)]
+        public IActionResult deleteUserListContent(int id)
+        {
+            var userID = Handler.UserID(HttpContext);
+            var response = userListContentsService.delete(x => x.ID == id && x.UserID == userID);
+            return Ok(response);
+        }
+        [HttpPost]
+        [Route("/addUserListContent")]
+        [Roles(Roles = RolesAttribute.All)]
+        public IActionResult addUserListContent([FromBody] UserListContents userList)
+        {
+            var userID = Handler.UserID(HttpContext);
+            if (userList.UserID == userID)
+            {
+                var response = userListContentsService.add(userList);
+                return Ok(response);
+            }
+            return BadRequest();
+        }
+        #endregion
+
+        #region Anime and Manga
+        [HttpGet]
+        [Route("/getSearchAnimeAndManga/{text}")]
+        public IActionResult getSearchAnimeAndManga(string text)
+        {
+            var response = new ServiceResponse<AnimeAndMangaModels>();
+            List<AnimeAndMangaModels> list = new List<AnimeAndMangaModels>();
+            var animeResponse = animeService.getList(x => x.AnimeName.ToLower().Contains(text)).List.ToList();
+            var mangaResponse = mangaService.getList(x => x.Name.ToLower().Contains(text)).List.ToList();
+            foreach (var anime in animeResponse)
+            {
+                list.Add(new AnimeAndMangaModels()
+                {
+                    ID = anime.ID,
+                    CreateTime = anime.CreateTime,
+                    name = anime.AnimeName,
+                    img = anime.Img,
+                    url = anime.SeoUrl,
+                    arrangement = 1,
+                    VideoType = anime.VideoType,
+                    like = likeService.getList(x => x.Type == Type.Anime && x.ContentID == anime.ID).Count,
+                    fanArtCount = fanArtService.getList(x => x.ContentID == anime.ID && x.Type == Type.Anime).Count,
+                    reviewsCount = reviewService.getList(x => x.ContentID == anime.ID && x.Type == Type.Anime).Count,
+                    Categories = categoryTypeService.getList(x => x.ContentID == anime.ID).List.ToList(),
+                    AnimeSeasons = animeSeasonService.getList(x => x.AnimeID == anime.ID).List.ToList(),
+                    AnimeEpisodes = animeEpisodesService.getList(x => x.AnimeID == anime.ID).List.ToList(),
+                    Type = Type.Anime
+                });
+            }
+            foreach (var manga in mangaResponse)
+            {
+                list.Add(new AnimeAndMangaModels()
+                {
+                    ID = manga.ID,
+                    CreateTime = manga.CreateTime,
+                    name = manga.Name,
+                    img = manga.Image,
+                    url = manga.SeoUrl,
+                    arrangement = 1,
+
+                    like = likeService.getList(x => x.Type == Type.Manga && x.ContentID == manga.ID).Count,
+                    fanArtCount = fanArtService.getList(x => x.ContentID == manga.ID && x.Type == Type.Manga).Count,
+                    reviewsCount = reviewService.getList(x => x.ContentID == manga.ID && x.Type == Type.Manga).Count,
+                    MangaEpisodes = mangaEpisodesService.getList(x => x.MangaID == manga.ID).List.ToList(),
+                    Categories = categoryTypeService.getList(x => x.ContentID == manga.ID).List.ToList(),
+                    Type = Type.Manga
+                });
+            }
+            response.List = list;
+            response.Count = list.Count();
+            return Ok(response);
+        }
+        #endregion
+
+        #region Content Notification
+
+        [HttpPost]
+        [Route("/addContentNotification")]
+        [Roles(Roles = RolesAttribute.All)]
+        public IActionResult addContentNotification([FromBody] ContentNotification contentNotification)
+        {
+            var userID = Handler.UserID(HttpContext);
+            if (contentNotification.UserID == userID)
+            {
+                var response = contentNotificationService.add(contentNotification);
+                return Ok(response);
+            }
+            return BadRequest();
+
+        }
+        [Route("/deleteContentNotification/{id}")]
+        [HttpDelete]
+        [Roles(Roles = RolesAttribute.All)]
+        public IActionResult deleteContentNotification(int id)
+        {
+            var userID = Handler.UserID(HttpContext);
+            var response = contentNotificationService.delete(x => x.ID == id && x.UserID == userID);
+            return Ok(response);
+        }
+        #endregion
+
+        [HttpGet]
+        [Route("/getDiscovers/{type}")]
+        public IActionResult getDiscovers(int type)
+        {
+            var response = new ServiceResponse<DiscoverModels>();
+            DiscoverModels discover = new DiscoverModels();
+            if (type == 1)
+            {
+                var fanArts = fanArtService.getList(x => x.Type == Type.Anime).List;
+                List<FanArtModel> fanArtModels = new List<FanArtModel>();
+                List<ReviewsModels> reviewsModels = new List<ReviewsModels>();
+                foreach (var fanArt in fanArts)
+                {
+                    FanArtModel fanArtModel = new FanArtModel(fanArt);
+                    if (fanArt.Type == Type.Manga)
+                    {
+                        fanArtModel.Manga = mangaService.get(x => x.ID == fanArt.ContentID).Entity;
+                    }
+                    else
+                    {
+                        fanArtModel.Anime = animeService.get(x => x.ID == fanArt.ContentID).Entity;
+                    }
+                    fanArtModel.Likes = likeService.getList((x) => x.Type == Type.FanArt).List.ToList();
+                    fanArtModel.Comments = commentsService.getList(x => x.Type == Type.FanArt).List.ToList();
+                    fanArtModels.Add(fanArtModel);
+                }
+                discover.FanArts = fanArtModels;
+                var reviews = reviewService.getList(x => x.Type == Type.Anime).List;
+                foreach (var review in reviews)
+                {
+                    ReviewsModels reviewsModel = new ReviewsModels(review);
+                    reviewsModel.Likes = likeService.getList((x) => x.Type == Type.Reviews).List.ToList();
+                    reviewsModel.Comments = commentsService.getList(x => x.Type == Type.Reviews).List.ToList();
+                    reviewsModels.Add(reviewsModel);
+                }
+                discover.Reviews = reviewsModels;
+                var movieTheWeekModels = movieTheWeekService.getList(x => x.Type == Type.Anime).List;
+                List<MovieTheWeekModels> movieTheWeeks = new List<MovieTheWeekModels>();
+                foreach (var item in movieTheWeekModels)
+                {
+                    MovieTheWeekModels movieTheWeek = new MovieTheWeekModels(item);
+                    movieTheWeek.Anime = animeService.get(x => x.ID == item.ContentID).Entity;
+                    movieTheWeek.Users = usersService.get(x => x.ID == item.UserID).Entity;
+                    movieTheWeeks.Add(movieTheWeek);
+
+                }
+                discover.MovieTheWeeks = movieTheWeeks;
+            }
+            else
+            {
+                var fanArts = fanArtService.getList(x => x.Type == Type.Manga).List;
+                List<FanArtModel> fanArtModels = new List<FanArtModel>();
+                List<ReviewsModels> reviewsModels = new List<ReviewsModels>();
+                foreach (var fanArt in fanArts)
+                {
+                    FanArtModel fanArtModel = new FanArtModel(fanArt);
+                    fanArtModel.Likes = likeService.getList((x) => x.Type == Type.FanArt).List.ToList();
+                    fanArtModel.Comments = commentsService.getList(x => x.Type == Type.FanArt).List.ToList();
+                    fanArtModels.Add(fanArtModel);
+                }
+                discover.FanArts = fanArtModels;
+                var reviews = reviewService.getList(x => x.Type == Type.Manga).List;
+                foreach (var review in reviews)
+                {
+                    ReviewsModels reviewsModel = new ReviewsModels(review);
+                    reviewsModel.Likes = likeService.getList((x) => x.Type == Type.Reviews).List.ToList();
+                    reviewsModel.Comments = commentsService.getList(x => x.Type == Type.Reviews).List.ToList();
+                    reviewsModels.Add(reviewsModel);
+                }
+                discover.Reviews = reviewsModels;
+                var movieTheWeekModels = movieTheWeekService.getList(x => x.Type == Type.Manga).List;
+                List<MovieTheWeekModels> movieTheWeeks = new List<MovieTheWeekModels>();
+                foreach (var item in movieTheWeekModels)
+                {
+                    MovieTheWeekModels movieTheWeek = new MovieTheWeekModels(item);
+                    movieTheWeek.Manga = mangaService.get(x => x.ID == item.ContentID).Entity;
+                    movieTheWeek.Users = usersService.get(x => x.ID == item.UserID).Entity;
+                    movieTheWeeks.Add(movieTheWeek);
+
+                }
+                discover.MovieTheWeeks = movieTheWeeks;
+            }
+            response.Entity = discover;
+            response.IsSuccessful = true;
+            return Ok(response);
+        }
     }
 }
 

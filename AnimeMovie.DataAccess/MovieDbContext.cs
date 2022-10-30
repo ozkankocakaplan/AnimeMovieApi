@@ -12,14 +12,14 @@ namespace AnimeMovie.DataAccess
         //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         //{
         //    base.OnConfiguring(optionsBuilder);
-        //    optionsBuilder.UseSqlServer("server=127.0.0.1,1433;database=AnimeMovieDB;User=Sa;password=3461663Oo.");
+        //    optionsBuilder.UseSqlServer("server=94.199.202.242,1433;database=lycorisa_AnimeMovieDB;User=animemoviedb;password=2423461663Oo.!");
         //}
 
         public DbSet<Anime> Animes { get; set; }
         public DbSet<AnimeEpisodes> AnimeEpisodes { get; set; }
         public DbSet<AnimeList> AnimeLists { get; set; }
-        public DbSet<AnimeOfTheWeek> AnimeOfTheWeeks { get; set; }
-        public DbSet<AnimeRating> AnimeRatings { get; set; }
+        public DbSet<MovieTheWeek> MovieTheWeeks { get; set; }
+        public DbSet<Ratings> Ratings { get; set; }
         public DbSet<AnimeSeason> AnimeSeasons { get; set; }
         public DbSet<AnimeSeasonMusic> AnimeSeasonMusics { get; set; }
         public DbSet<Announcement> Announcements { get; set; }
@@ -56,6 +56,7 @@ namespace AnimeMovie.DataAccess
         public DbSet<Favorite> Favorites { get; set; }
         public DbSet<UserList> userLists { get; set; }
         public DbSet<UserListContents> UserListContents { get; set; }
+        public DbSet<ContentNotification> ContentNotifications { get; set; }
     }
 }
 

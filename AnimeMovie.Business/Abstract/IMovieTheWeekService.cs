@@ -3,7 +3,7 @@ using AnimeMovie.Entites;
 
 namespace AnimeMovie.Business.Abstract
 {
-    public interface IAnimeOfTheWeekService : IService<AnimeOfTheWeek>
+    public interface IMovieTheWeekService : IService<MovieTheWeek>
     {
     }
 }

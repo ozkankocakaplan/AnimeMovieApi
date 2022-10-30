@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Xml.Linq;
+using AnimeMovie.API.Models;
 using AnimeMovie.Business;
 using AnimeMovie.Business.Abstract;
 using AnimeMovie.Entites;
@@ -17,9 +19,23 @@ namespace AnimeMovie.API.Controllers
         private readonly IMangaService mangaService;
         private readonly IMangaEpisodesService mangaEpisodesService;
         private readonly IMangaEpisodeContentService mangaEpisodeContentService;
+        private readonly IMangaImageService mangaImageService;
+        private readonly ILikeService likeService;
+        private readonly ICategoryTypeService categoryTypeService;
+        private readonly IRatingsService ratingsService;
+        private readonly IMangaListService mangaListService;
+        private readonly IContentNotificationService contentNotificationService;
         public MangaController(IMangaService manga, IWebHostEnvironment webHost,
-            IMangaEpisodeContentService mangaEpisodeContent, IMangaEpisodesService mangaEpisodes)
+            IContentNotificationService contentNotification,
+            ICategoryTypeService categoryType,IRatingsService ratings,IMangaListService mangaList,
+            IMangaEpisodeContentService mangaEpisodeContent,ILikeService like, IMangaEpisodesService mangaEpisodes, IMangaImageService mangaImage)
         {
+            contentNotificationService = contentNotification;
+            mangaListService = mangaList;
+            ratingsService = ratings;
+            categoryTypeService = categoryType;
+            likeService = like;
+            mangaImageService = mangaImage;
             webHostEnvironment = webHost;
             mangaService = manga;
             mangaEpisodeContentService = mangaEpisodeContent;
@@ -34,18 +50,44 @@ namespace AnimeMovie.API.Controllers
             if (img != null && img.Length != 0)
             {
                 var guid = Guid.NewGuid().ToString();
-                var patch = webHostEnvironment.WebRootPath + "/image/";
+                var patch = webHostEnvironment.WebRootPath + "/manga/";
                 using (FileStream fs = System.IO.File.Create(patch + guid + img.FileName))
                 {
                     img.CopyTo(fs);
                     fs.Flush();
-                    manga.Image = "/image/" + guid + img.FileName;
+                    manga.Image = "/manga/" + guid + img.FileName;
                 }
             }
             var response = mangaService.add(manga);
             return Ok(response);
         }
+        [HttpPut]
+        [Route("/updateMangaImage/{ID}")]
+        [Roles(Roles = RolesAttribute.AdminOrModerator)]
+        public IActionResult updateMangaImage([FromForm] IFormFile mangaImg, int ID)
+        {
+            var manga = mangaService.get(x => x.ID == ID).Entity;
+            if (mangaImg != null && mangaImg.Length != 0 && manga != null)
+            {
+                string guid = Guid.NewGuid().ToString();
+                string patch = webHostEnvironment.WebRootPath + "/anime/";
+                using (FileStream fs = System.IO.File.Create(patch + guid + mangaImg.FileName))
+                {
+                    mangaImg.CopyTo(fs);
+                    fs.Flush();
 
+                    var getManga = manga.Image;
+                    manga.Image = "/anime/" + guid + mangaImg.FileName;
+                    if (getManga != null && getManga.Length != 0)
+                    {
+                        System.IO.File.Delete(webHostEnvironment.WebRootPath + getManga);
+                    }
+                    var response = mangaService.update(manga);
+                    return Ok(response);
+                }
+            }
+            return BadRequest();
+        }
         [HttpPut]
         [Roles(Roles = RolesAttribute.AdminOrModerator)]
         [Route("/updateManga")]
@@ -54,12 +96,12 @@ namespace AnimeMovie.API.Controllers
             if (img != null && img.Length != 0)
             {
                 var guid = Guid.NewGuid().ToString();
-                var patch = webHostEnvironment.WebRootPath + "/image/";
+                var patch = webHostEnvironment.WebRootPath + "/manga/";
                 using (FileStream fs = System.IO.File.Create(patch + guid + img.FileName))
                 {
                     img.CopyTo(fs);
                     fs.Flush();
-                    manga.Image = "/image/" + guid + img.FileName;
+                    manga.Image = "/manga/" + guid + img.FileName;
                 }
             }
             var response = mangaService.update(manga);
@@ -121,8 +163,33 @@ namespace AnimeMovie.API.Controllers
         [Route("/getMangas")]
         public IActionResult getMangas()
         {
-            var response = mangaService.getList();
-            return Ok(response);
+            var list = mangaService.getList();
+            if(list.Count != 0)
+            {
+                var response = new ServiceResponse<MangaModels>();
+                List<MangaModels> mangaModels = new List<MangaModels>();
+                foreach (var manga in list.List)
+                {
+                    MangaModels mangaModel = new MangaModels();
+                    mangaModel.Manga = manga;
+
+                    mangaModel.Categories = categoryTypeService.getList(x => x.Type == Entites.Type.Manga && x.ContentID == manga.ID).List.ToList();
+                    mangaModel.Arrangement = 1;
+                    mangaModel.ContentNotification = contentNotificationService.get(x => x.ContentID == manga.ID && x.Type == Entites.Type.Manga).Entity;
+                    mangaModel.LikeCount = likeService.getList(x => x.ContentID == manga.ID && x.Type == Entites.Type.Manga).List.ToList().Count;
+                    mangaModel.ViewsCount = mangaListService.getList(x => x.MangaID == manga.ID && x.Status == MangaStatus.IRead).List.ToList().Count;
+                    var ratingCount = ratingsService.getList(x => x.Type == Entites.Type.Manga && x.AnimeID == manga.ID).List.ToList().Count;
+                    mangaModel.Rating = (ratingCount / 10) == 0 ? 1 : ratingCount / 10;
+                    mangaModel.MangaEpisodeCount = mangaEpisodesService.getList(x=>x.MangaID == manga.ID).List.Count();
+                    mangaModels.Add(mangaModel);
+                }
+                response.List = mangaModels;
+                response.Count = mangaModels.Count;
+                response.IsSuccessful = true;
+                return Ok(response);
+            }
+            
+            return BadRequest();
         }
         [HttpGet]
         [Route("/getSearchDetailsMangas/{text}")]
@@ -299,6 +366,55 @@ namespace AnimeMovie.API.Controllers
             }
             response.List = episodoContentID;
             response.Count = episodoContentID.Count;
+            return Ok(response);
+        }
+        #endregion
+        #region Manga Image
+        [HttpPost]
+        [Route("/addMangaImage/{mangaID}")]
+        [Roles(Roles = RolesAttribute.AdminOrModerator)]
+        public IActionResult addMangaImage([FromForm] List<IFormFile> files, int mangaID)
+        {
+            if (files != null && files.Count != 0)
+            {
+                foreach (var file in files)
+                {
+                    string guid = Guid.NewGuid().ToString();
+                    var patch = webHostEnvironment.WebRootPath + "/manga/";
+                    using (FileStream fs = System.IO.File.Create(patch + guid + file.FileName))
+                    {
+                        file.CopyTo(fs);
+                        fs.Flush();
+                    }
+                    mangaImageService.add(new MangaImages()
+                    {
+                        MangaID = mangaID,
+                        Img = "/manga/" + guid + file.FileName,
+                    });
+                }
+                return Ok();
+            }
+            return BadRequest();
+        }
+        [HttpDelete]
+        [Route("/deleteMangaImage/{id}")]
+        [Roles(Roles = RolesAttribute.AdminOrModerator)]
+        public IActionResult deleteMangaImage(int id)
+        {
+            var get = mangaImageService.get(x => x.ID == id).Entity;
+            if (get != null)
+            {
+                System.IO.File.Delete(webHostEnvironment.WebRootPath + get.Img);
+                var response = mangaImageService.delete(x => x.ID == id);
+                return Ok(response);
+            }
+            return BadRequest();
+        }
+        [HttpGet]
+        [Route("/getMangaImageList/{mangaID}")]
+        public IActionResult getAnimeImageList(int mangaID)
+        {
+            var response = mangaImageService.getList(x => x.MangaID == mangaID);
             return Ok(response);
         }
         #endregion

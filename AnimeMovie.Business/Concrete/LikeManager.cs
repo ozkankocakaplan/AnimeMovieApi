@@ -19,6 +19,7 @@ namespace AnimeMovie.Business.Concrete
             var response = new ServiceResponse<Like>();
             try
             {
+                response.Entity = likeRepository.Create(entity);
                 response.IsSuccessful = true;
             }
             catch (Exception ex)

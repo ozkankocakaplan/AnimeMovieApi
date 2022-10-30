@@ -6,17 +6,17 @@ using AnimeMovie.Entites;
 
 namespace AnimeMovie.Business.Concrete
 {
-    public class AnimeOfTheWeekManager : IAnimeOfTheWeekService
+    public class MovieOfTheWeekManager : IMovieTheWeekService
     {
-        private readonly IAnimeOfTheWeekRepository animeOfTheWeekRepository;
-        public AnimeOfTheWeekManager(IAnimeOfTheWeekRepository animeOfTheWeek)
+        private readonly IMovieTheWeekRepository animeOfTheWeekRepository;
+        public MovieOfTheWeekManager(IMovieTheWeekRepository animeOfTheWeek)
         {
             animeOfTheWeekRepository = animeOfTheWeek;
         }
 
-        public ServiceResponse<AnimeOfTheWeek> add(AnimeOfTheWeek entity)
+        public ServiceResponse<MovieTheWeek> add(MovieTheWeek entity)
         {
-            var response = new ServiceResponse<AnimeOfTheWeek>();
+            var response = new ServiceResponse<MovieTheWeek>();
             try
             {
                 response.Entity = animeOfTheWeekRepository.Create(entity);
@@ -30,9 +30,9 @@ namespace AnimeMovie.Business.Concrete
             return response;
         }
 
-        public ServiceResponse<AnimeOfTheWeek> delete(Expression<Func<AnimeOfTheWeek, bool>> expression)
+        public ServiceResponse<MovieTheWeek> delete(Expression<Func<MovieTheWeek, bool>> expression)
         {
-            var response = new ServiceResponse<AnimeOfTheWeek>();
+            var response = new ServiceResponse<MovieTheWeek>();
             try
             {
                 animeOfTheWeekRepository.Delete(expression);
@@ -46,9 +46,9 @@ namespace AnimeMovie.Business.Concrete
             return response;
         }
 
-        public ServiceResponse<AnimeOfTheWeek> get(Expression<Func<AnimeOfTheWeek, bool>> expression)
+        public ServiceResponse<MovieTheWeek> get(Expression<Func<MovieTheWeek, bool>> expression)
         {
-            var response = new ServiceResponse<AnimeOfTheWeek>();
+            var response = new ServiceResponse<MovieTheWeek>();
             try
             {
                 response.Entity = animeOfTheWeekRepository.get(expression);
@@ -62,9 +62,9 @@ namespace AnimeMovie.Business.Concrete
             return response;
         }
 
-        public ServiceResponse<AnimeOfTheWeek> getList()
+        public ServiceResponse<MovieTheWeek> getList()
         {
-            var response = new ServiceResponse<AnimeOfTheWeek>();
+            var response = new ServiceResponse<MovieTheWeek>();
             try
             {
                 response.List = animeOfTheWeekRepository.GetAll().ToList();
@@ -79,9 +79,9 @@ namespace AnimeMovie.Business.Concrete
             return response;
         }
 
-        public ServiceResponse<AnimeOfTheWeek> getList(Expression<Func<AnimeOfTheWeek, bool>> expression)
+        public ServiceResponse<MovieTheWeek> getList(Expression<Func<MovieTheWeek, bool>> expression)
         {
-            var response = new ServiceResponse<AnimeOfTheWeek>();
+            var response = new ServiceResponse<MovieTheWeek>();
             try
             {
                 var list = animeOfTheWeekRepository.TableNoTracking.Where(expression).ToList();
@@ -97,9 +97,9 @@ namespace AnimeMovie.Business.Concrete
             return response;
         }
 
-        public ServiceResponse<AnimeOfTheWeek> update(AnimeOfTheWeek entity)
+        public ServiceResponse<MovieTheWeek> update(MovieTheWeek entity)
         {
-            var response = new ServiceResponse<AnimeOfTheWeek>();
+            var response = new ServiceResponse<MovieTheWeek>();
             try
             {
                 response.Entity = animeOfTheWeekRepository.Update(entity);

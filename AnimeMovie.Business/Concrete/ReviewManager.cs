@@ -4,6 +4,7 @@ using AnimeMovie.Business.Abstract;
 using AnimeMovie.DataAccess.Abstract;
 using AnimeMovie.DataAccess.Concrete;
 using AnimeMovie.Entites;
+using Microsoft.EntityFrameworkCore;
 
 namespace AnimeMovie.Business.Concrete
 {
@@ -20,6 +21,7 @@ namespace AnimeMovie.Business.Concrete
             var response = new ServiceResponse<Review>();
             try
             {
+                response.Entity = reviewRepository.Create(entity);
                 response.IsSuccessful = true;
             }
             catch (Exception ex)
@@ -67,7 +69,7 @@ namespace AnimeMovie.Business.Concrete
             var response = new ServiceResponse<Review>();
             try
             {
-                response.List = reviewRepository.GetAll().ToList();
+                response.List = reviewRepository.TableNoTracking.Include(x => x.User).ToList();
                 response.Count = reviewRepository.Count();
                 response.IsSuccessful = true;
             }
@@ -84,7 +86,7 @@ namespace AnimeMovie.Business.Concrete
             var response = new ServiceResponse<Review>();
             try
             {
-                var list = reviewRepository.TableNoTracking.Where(expression).ToList();
+                var list = reviewRepository.TableNoTracking.Include(x => x.User).Where(expression).ToList();
                 response.List = list;
                 response.Count = list.Count;
                 response.IsSuccessful = true;

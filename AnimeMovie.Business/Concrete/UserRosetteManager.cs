@@ -3,6 +3,7 @@ using System.Linq.Expressions;
 using AnimeMovie.Business.Abstract;
 using AnimeMovie.DataAccess.Abstract;
 using AnimeMovie.Entites;
+using Microsoft.EntityFrameworkCore;
 
 namespace AnimeMovie.Business.Concrete
 {
@@ -84,7 +85,7 @@ namespace AnimeMovie.Business.Concrete
             var response = new ServiceResponse<UserRosette>();
             try
             {
-                var list = userRosetteRepository.TableNoTracking.Where(expression).ToList();
+                var list = userRosetteRepository.TableNoTracking.Include(x => x.Rosette).Where(expression).ToList();
                 response.List = list;
                 response.Count = list.Count;
                 response.IsSuccessful = true;

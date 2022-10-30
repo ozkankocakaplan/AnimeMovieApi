@@ -3,6 +3,7 @@ using System.Linq.Expressions;
 using AnimeMovie.Business.Abstract;
 using AnimeMovie.DataAccess.Abstract;
 using AnimeMovie.Entites;
+using Microsoft.EntityFrameworkCore;
 
 namespace AnimeMovie.Business.Concrete
 {
@@ -66,7 +67,7 @@ namespace AnimeMovie.Business.Concrete
             var response = new ServiceResponse<CategoryType>();
             try
             {
-                response.List = categoryTypeRepository.GetAll().ToList();
+                response.List = categoryTypeRepository.TableNoTracking.Include(x => x.Categories).ToList();
                 response.Count = categoryTypeRepository.Count();
                 response.IsSuccessful = true;
             }
@@ -83,7 +84,7 @@ namespace AnimeMovie.Business.Concrete
             var response = new ServiceResponse<CategoryType>();
             try
             {
-                var list = categoryTypeRepository.TableNoTracking.Where(expression).ToList();
+                var list = categoryTypeRepository.TableNoTracking.Include(x => x.Categories).Where(expression).ToList();
                 response.List = list;
                 response.Count = list.Count;
                 response.IsSuccessful = true;

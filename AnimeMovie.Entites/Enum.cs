@@ -6,7 +6,8 @@ namespace AnimeMovie.Entites
         Anime = 1,
         Manga = 2,
         FanArt = 3,
-        Comment = 4
+        Comment = 4,
+        Reviews = 5
     }
     public enum RoleType
     {

@@ -9,7 +9,7 @@ namespace AnimeMovie.Entites
         [ForeignKey("Rosette")]
         public int RosetteID { get; set; }
         public Status Status { get; set; } = Status.NotApproved;
-        public Rosette Rosette { get; set; }
+        public virtual Rosette Rosette { get; set; }
     }
 }
 

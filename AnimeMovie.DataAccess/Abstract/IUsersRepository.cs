@@ -8,7 +8,7 @@ namespace AnimeMovie.DataAccess.Abstract
         Users addUser(Users user);
         Users updateUserBanned(int userID);
         Users updateRole(RoleType roleType, int userID);
-        Users updateUserInfo(string nameSurname, string userName, string seoUrl, int userID);
+        Users updateUserInfo(string nameSurname, string userName, string seoUrl, string about, int userID);
         Users updateEmail(string email, int userID);
         Users updateImage(string imgUrl, int userID);
         Users updatePassword(string currentPassword, string newPassword, int userID);

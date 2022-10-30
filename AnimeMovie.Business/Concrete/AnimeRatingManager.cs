@@ -10,20 +10,20 @@ using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 
 namespace AnimeMovie.Business.Concrete
 {
-    public class AnimeRatingManager : IAnimeRatingService
+    public class RatingsManager : IRatingsService
     {
-        private readonly IAnimeRatingRepository animeRatingRepository;
-        public AnimeRatingManager(IAnimeRatingRepository animeRating)
+        private readonly IRatingsRepository RatingsRepository;
+        public RatingsManager(IRatingsRepository Ratings)
         {
-            animeRatingRepository = animeRating;
+            RatingsRepository = Ratings;
         }
 
-        public ServiceResponse<AnimeRating> add(AnimeRating entity)
+        public ServiceResponse<Ratings> add(Ratings entity)
         {
-            var response = new ServiceResponse<AnimeRating>();
+            var response = new ServiceResponse<Ratings>();
             try
             {
-                response.Entity = animeRatingRepository.Create(entity);
+                response.Entity = RatingsRepository.Create(entity);
                 response.IsSuccessful = true;
             }
             catch (Exception ex)
@@ -34,12 +34,12 @@ namespace AnimeMovie.Business.Concrete
             return response;
         }
 
-        public ServiceResponse<AnimeRating> delete(Expression<Func<AnimeRating, bool>> expression)
+        public ServiceResponse<Ratings> delete(Expression<Func<Ratings, bool>> expression)
         {
-            var response = new ServiceResponse<AnimeRating>();
+            var response = new ServiceResponse<Ratings>();
             try
             {
-                animeRatingRepository.Delete(expression);
+                RatingsRepository.Delete(expression);
                 response.IsSuccessful = true;
             }
             catch (Exception ex)
@@ -50,12 +50,12 @@ namespace AnimeMovie.Business.Concrete
             return response;
         }
 
-        public ServiceResponse<AnimeRating> get(Expression<Func<AnimeRating, bool>> expression)
+        public ServiceResponse<Ratings> get(Expression<Func<Ratings, bool>> expression)
         {
-            var response = new ServiceResponse<AnimeRating>();
+            var response = new ServiceResponse<Ratings>();
             try
             {
-                response.Entity = animeRatingRepository.get(expression);
+                response.Entity = RatingsRepository.get(expression);
                 response.IsSuccessful = true;
             }
             catch (Exception ex)
@@ -66,13 +66,13 @@ namespace AnimeMovie.Business.Concrete
             return response;
         }
 
-        public ServiceResponse<AnimeRating> getList()
+        public ServiceResponse<Ratings> getList()
         {
-            var response = new ServiceResponse<AnimeRating>();
+            var response = new ServiceResponse<Ratings>();
             try
             {
-                response.List = animeRatingRepository.GetAll().ToList();
-                response.Count = animeRatingRepository.Count();
+                response.List = RatingsRepository.GetAll().ToList();
+                response.Count = RatingsRepository.Count();
                 response.IsSuccessful = true;
             }
             catch (Exception ex)
@@ -83,12 +83,12 @@ namespace AnimeMovie.Business.Concrete
             return response;
         }
 
-        public ServiceResponse<AnimeRating> getList(Expression<Func<AnimeRating, bool>> expression)
+        public ServiceResponse<Ratings> getList(Expression<Func<Ratings, bool>> expression)
         {
-            var response = new ServiceResponse<AnimeRating>();
+            var response = new ServiceResponse<Ratings>();
             try
             {
-                var list = animeRatingRepository.TableNoTracking.Where(expression).ToList();
+                var list = RatingsRepository.TableNoTracking.Where(expression).ToList();
                 response.List = list;
                 response.Count = list.Count;
                 response.IsSuccessful = true;
@@ -101,12 +101,12 @@ namespace AnimeMovie.Business.Concrete
             return response;
         }
 
-        public ServiceResponse<AnimeRating> update(AnimeRating entity)
+        public ServiceResponse<Ratings> update(Ratings entity)
         {
-            var response = new ServiceResponse<AnimeRating>();
+            var response = new ServiceResponse<Ratings>();
             try
             {
-                response.Entity = animeRatingRepository.Update(entity);
+                response.Entity = RatingsRepository.Update(entity);
                 response.IsSuccessful = true;
             }
             catch (Exception ex)

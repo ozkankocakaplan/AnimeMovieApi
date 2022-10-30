@@ -302,7 +302,7 @@ namespace AnimeMovie.Business.Concrete
             return response;
         }
 
-        public ServiceResponse<Users> updateUserInfo(string nameSurname, string userName, int userID)
+        public ServiceResponse<Users> updateUserInfo(string nameSurname, string userName, string about, int userID)
         {
             var response = new ServiceResponse<Users>();
             try
@@ -310,7 +310,7 @@ namespace AnimeMovie.Business.Concrete
                 var user = usersRepository.TableNoTracking.Where(x => x.ID == userID).SingleOrDefault();
                 user.UserName = userName;
                 var url = seoUrl.createUserLink(user);
-                response.Entity = usersRepository.updateUserInfo(nameSurname, userName, url, userID);
+                response.Entity = usersRepository.updateUserInfo(nameSurname, userName, url, about, userID);
                 response.IsSuccessful = true;
             }
             catch (Exception ex)

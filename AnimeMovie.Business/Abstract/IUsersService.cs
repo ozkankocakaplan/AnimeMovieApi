@@ -13,7 +13,7 @@ namespace AnimeMovie.Business.Abstract
         ServiceResponse<Users> updateImage(string imgUrl, int userID);
         ServiceResponse<Users> updatePassword(string currentPassword, string newPassword, int userID);
         ServiceResponse<Users> updateUserName(string userName, int userID);
-        ServiceResponse<Users> updateUserInfo(string nameSurname, string userName, int userID);
+        ServiceResponse<Users> updateUserInfo(string nameSurname, string userName, string about, int userID);
         ServiceResponse<Users> updateEmail(string email, int userID);
         ServiceResponse<Users> updateRole(RoleType role, int userID);
     }

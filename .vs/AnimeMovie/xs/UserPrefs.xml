@@ -1,11 +1,11 @@
 ﻿<Properties StartupConfiguration="{36613161-7983-4322-990B-F567FDAA2016}|Default">
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="AnimeMovie.API/Controllers/RosetteController.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="AnimeMovie.API/Program.cs">
     <Files>
-      <File FileName="AnimeMovie.API/Controllers/AdminController.cs" />
-      <File FileName="AnimeMovie.Entites/UserRosette.cs" />
-      <File FileName="AnimeMovie.DataAccess/MovieDbContext.cs" />
-      <File FileName="AnimeMovie.API/Controllers/RosetteController.cs" Line="68" Column="10" />
+      <File FileName="AnimeMovie.API/Hubs/UserHub.cs" />
+      <File FileName="AnimeMovie.Entites/UserMessage.cs" />
+      <File FileName="AnimeMovie.DataAccess/Concrete/UserMessageRepository.cs" />
+      <File FileName="AnimeMovie.Business/Concrete/UserMessageManager.cs" />
+      <File FileName="AnimeMovie.API/Program.cs" Line="228" Column="1" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
@@ -13,25 +13,27 @@
           <Node name="AnimeMovie" expanded="True">
             <Node name="AnimeMovie.API" expanded="True">
               <Node name="Controllers" expanded="True" />
+              <Node name="Hubs" expanded="True" />
+              <Node name="Models" expanded="True" />
+              <Node name="Program.cs" selected="True" />
             </Node>
             <Node name="AnimeMovie.Business" expanded="True">
-              <Node name="Abstract" expanded="True" />
               <Node name="Concrete" expanded="True" />
-              <Node name="Models" expanded="True" />
             </Node>
-            <Node name="AnimeMovie.DataAccess" expanded="True" />
+            <Node name="AnimeMovie.DataAccess" expanded="True">
+              <Node name="Concrete" expanded="True" />
+            </Node>
             <Node name="AnimeMovie.Entites" expanded="True" />
           </Node>
         </State>
       </Pad>
     </Pads>
   </MonoDevelop.Ide.Workbench>
-  <MonoDevelop.Ide.ItemProperties.AnimeMovie.API PreferredExecutionTarget="/Applications/Safari.app" />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
-    <BreakpointStore>
-      <Breakpoint file="/Users/ozkan/Projects/AnimeMovie/AnimeMovie.API/Controllers/HomeSliderController.cs" relfile="AnimeMovie.API/Controllers/HomeSliderController.cs" line="53" column="1" />
-    </BreakpointStore>
+    <BreakpointStore />
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
-  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
   <MultiItemStartupConfigurations />
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MonoDevelop.Ide.ItemProperties.AnimeMovie.API PreferredExecutionTarget="/Applications/Safari.app" />
 </Properties>

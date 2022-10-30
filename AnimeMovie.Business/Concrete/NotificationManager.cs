@@ -20,7 +20,7 @@ namespace AnimeMovie.Business.Concrete
             var response = new ServiceResponse<Notification>();
             try
             {
-
+                response.Entity = notificationsRepository.Create(entity);
                 response.IsSuccessful = true;
             }
             catch (Exception ex)

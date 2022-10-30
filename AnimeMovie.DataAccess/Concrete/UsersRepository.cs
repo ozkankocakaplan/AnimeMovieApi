@@ -97,7 +97,7 @@ namespace AnimeMovie.DataAccess.Concrete
             return user;
         }
 
-        public Users updateUserInfo(string nameSurname, string userName, string seoUrl, int userID)
+        public Users updateUserInfo(string nameSurname, string userName, string seoUrl, string about, int userID)
         {
             var user = get(x => x.ID == userID);
             if (user != null)
@@ -105,10 +105,12 @@ namespace AnimeMovie.DataAccess.Concrete
                 user.NameSurname = nameSurname;
                 user.UserName = userName;
                 user.SeoUrl = seoUrl;
+                user.About = about;
                 movieDbContext.Users.Attach(user);
                 movieDbContext.Entry(user).Property(x => x.UserName).IsModified = true;
                 movieDbContext.Entry(user).Property(x => x.NameSurname).IsModified = true;
                 movieDbContext.Entry(user).Property(x => x.SeoUrl).IsModified = true;
+                movieDbContext.Entry(user).Property(x => x.About).IsModified = true;
                 movieDbContext.SaveChanges();
             }
             return user;

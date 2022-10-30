@@ -5,6 +5,7 @@ namespace AnimeMovie.Entites
     {
         public int UserID { get; set; }
         public int BlockID { get; set; }
+        public bool isBlocked { get; set; }
     }
 }
 

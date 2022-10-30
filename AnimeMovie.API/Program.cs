@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using AnimeMovie.API;
 using AnimeMovie.API.Hubs;
+using AnimeMovie.Business;
 using AnimeMovie.Business.Abstract;
 using AnimeMovie.Business.Concrete;
 using AnimeMovie.Business.Helper;
@@ -13,10 +14,14 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.WebHost.UseUrls("http://192.168.2.100:37323");
+builder.WebHost.UseUrls("http://192.168.2.175:37323");
 
 
-
+builder.Services.AddSignalR(ayar =>
+{
+    ayar.EnableDetailedErrors = true;
+    ayar.KeepAliveInterval = TimeSpan.FromSeconds(10);
+});
 
 // Add services to the container.
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -31,6 +36,17 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidIssuer = builder.Configuration["Jwt:Issuer"],
             ValidAudience = builder.Configuration["Jwt:Issuer"],
             IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+        };
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                if (context.Request.Path.ToString().StartsWith("/userHub"))
+                {
+                    context.Token = context.Request.Query["access_token"];
+                }
+                return Task.CompletedTask;
+            }
         };
     });
 
@@ -52,11 +68,11 @@ builder.Services.AddScoped<IAnimeEpisodesService, AnimeEpisodesManager>();
 builder.Services.AddScoped<IAnimeListRepository, AnimeListRepository>();
 builder.Services.AddScoped<IAnimeListService, AnimeListManager>();
 
-builder.Services.AddScoped<IAnimeOfTheWeekRepository, AnimeOfTheWeekRepository>();
-builder.Services.AddScoped<IAnimeOfTheWeekService, AnimeOfTheWeekManager>();
+builder.Services.AddScoped<IMovieTheWeekRepository, MovieTheWeekRepository>();
+builder.Services.AddScoped<IMovieTheWeekService, MovieOfTheWeekManager>();
 
-builder.Services.AddScoped<IAnimeRatingRepository, AnimeRatingRepository>();
-builder.Services.AddScoped<IAnimeRatingService, AnimeRatingManager>();
+builder.Services.AddScoped<IRatingsRepository, RatingsRepository>();
+builder.Services.AddScoped<IRatingsService, RatingsManager>();
 
 builder.Services.AddScoped<IAnimeSeasonMusicRepository, AnimeSeasonMusicRepository>();
 builder.Services.AddScoped<IAnimeSeasonMusicService, AnimeSeasonMusicManager>();
@@ -175,6 +191,10 @@ builder.Services.AddScoped<IUserListService, UserListManager>();
 builder.Services.AddScoped<IUserListContentsRepository, UserListContentsRepository>();
 builder.Services.AddScoped<IUserListContentsService, UserListContentsManager>();
 
+builder.Services.AddScoped<IContentNotificationRepository, ContentNotificatonRepository>();
+builder.Services.AddScoped<IContentNotificationService, ContentNotificationManager>();
+
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -187,10 +207,18 @@ DataSeeding.Seed(app);
 app.UseHttpsRedirection();
 app.UseCors(builder =>
 {
-    builder.WithOrigins("http://localhost:3000")
+    builder.WithOrigins("https://admin.lycorisa.com")
     .AllowAnyHeader()
     .AllowAnyMethod()
     .AllowCredentials();
+    builder.WithOrigins("http://localhost:3000")
+   .AllowAnyHeader()
+   .AllowAnyMethod()
+   .AllowCredentials();
+    builder.WithOrigins("http://localhost:3001")
+  .AllowAnyHeader()
+  .AllowAnyMethod()
+  .AllowCredentials();
 });
 app.UseAuthentication();
 app.UseAuthorization();

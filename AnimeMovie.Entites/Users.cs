@@ -9,6 +9,7 @@ namespace AnimeMovie.Entites
         public string? UserName { get; set; }
         public string? BirthDay { get; set; }
         public string? Email { get; set; }
+        public string? About { get; set; }
         public string? Password
         {
             get { return null; }

@@ -42,17 +42,11 @@ namespace AnimeMovie.DataAccess.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Arrangement")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateTime>("CreateTime")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Img")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("Like")
-                        .HasColumnType("int");
 
                     b.Property<string>("MalRating")
                         .IsRequired()
@@ -69,13 +63,14 @@ namespace AnimeMovie.DataAccess.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("SiteRating")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
                     b.Property<int>("VideoType")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Views")
                         .HasColumnType("int");
 
                     b.HasKey("ID");
@@ -160,58 +155,11 @@ namespace AnimeMovie.DataAccess.Migrations
 
                     b.HasKey("ID");
 
+                    b.HasIndex("AnimeID");
+
+                    b.HasIndex("EpisodeID");
+
                     b.ToTable("AnimeLists");
-                });
-
-            modelBuilder.Entity("AnimeMovie.Entites.AnimeOfTheWeek", b =>
-                {
-                    b.Property<int>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"), 1L, 1);
-
-                    b.Property<int>("AnimeID")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreateTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("UserID")
-                        .HasColumnType("int");
-
-                    b.HasKey("ID");
-
-                    b.ToTable("AnimeOfTheWeeks");
-                });
-
-            modelBuilder.Entity("AnimeMovie.Entites.AnimeRating", b =>
-                {
-                    b.Property<int>("ID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"), 1L, 1);
-
-                    b.Property<int>("AnimeID")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreateTime")
-                        .HasColumnType("datetime2");
-
-                    b.Property<double>("Rating")
-                        .HasColumnType("float");
-
-                    b.Property<int>("UserID")
-                        .HasColumnType("int");
-
-                    b.HasKey("ID");
-
-                    b.ToTable("AnimeRatings");
                 });
 
             modelBuilder.Entity("AnimeMovie.Entites.AnimeSeason", b =>
@@ -367,6 +315,8 @@ namespace AnimeMovie.DataAccess.Migrations
 
                     b.HasKey("ID");
 
+                    b.HasIndex("CategoryID");
+
                     b.ToTable("CategoryTypes");
                 });
 
@@ -398,6 +348,8 @@ namespace AnimeMovie.DataAccess.Migrations
                         .HasColumnType("bit");
 
                     b.HasKey("ID");
+
+                    b.HasIndex("UserID");
 
                     b.ToTable("Comments");
                 });
@@ -510,6 +462,33 @@ namespace AnimeMovie.DataAccess.Migrations
                     b.HasKey("ID");
 
                     b.ToTable("ContentComplaints");
+                });
+
+            modelBuilder.Entity("AnimeMovie.Entites.ContentNotification", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"), 1L, 1);
+
+                    b.Property<int>("ContentID")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserID")
+                        .HasColumnType("int");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("UserID");
+
+                    b.ToTable("ContentNotifications");
                 });
 
             modelBuilder.Entity("AnimeMovie.Entites.Episodes", b =>
@@ -651,6 +630,9 @@ namespace AnimeMovie.DataAccess.Migrations
                     b.Property<DateTime>("CreateTime")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("EpisodeID")
+                        .HasColumnType("int");
+
                     b.Property<int>("Type")
                         .HasColumnType("int");
 
@@ -677,9 +659,6 @@ namespace AnimeMovie.DataAccess.Migrations
                     b.Property<int>("AnimeID")
                         .HasColumnType("int");
 
-                    b.Property<string>("Arrangement")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<DateTime>("CreateTime")
                         .HasColumnType("datetime2");
 
@@ -690,11 +669,19 @@ namespace AnimeMovie.DataAccess.Migrations
                     b.Property<string>("Image")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("MalRating")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("SeoUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("SiteRating")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -811,7 +798,40 @@ namespace AnimeMovie.DataAccess.Migrations
 
                     b.HasKey("ID");
 
+                    b.HasIndex("EpisodeID");
+
+                    b.HasIndex("MangaID");
+
                     b.ToTable("MangaLists");
+                });
+
+            modelBuilder.Entity("AnimeMovie.Entites.MovieTheWeek", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"), 1L, 1);
+
+                    b.Property<int>("ContentID")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserID")
+                        .HasColumnType("int");
+
+                    b.HasKey("ID");
+
+                    b.ToTable("MovieTheWeeks");
                 });
 
             modelBuilder.Entity("AnimeMovie.Entites.Notification", b =>
@@ -843,6 +863,34 @@ namespace AnimeMovie.DataAccess.Migrations
                     b.ToTable("Notifications");
                 });
 
+            modelBuilder.Entity("AnimeMovie.Entites.Ratings", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"), 1L, 1);
+
+                    b.Property<int>("AnimeID")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<double>("Rating")
+                        .HasColumnType("float");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("int");
+
+                    b.Property<int>("UserID")
+                        .HasColumnType("int");
+
+                    b.HasKey("ID");
+
+                    b.ToTable("Ratings");
+                });
+
             modelBuilder.Entity("AnimeMovie.Entites.Review", b =>
                 {
                     b.Property<int>("ID")
@@ -868,6 +916,8 @@ namespace AnimeMovie.DataAccess.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("ID");
+
+                    b.HasIndex("UserID");
 
                     b.ToTable("Reviews");
                 });
@@ -919,6 +969,8 @@ namespace AnimeMovie.DataAccess.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("ID");
+
+                    b.HasIndex("RosetteID");
 
                     b.ToTable("RosetteContents");
                 });
@@ -999,6 +1051,9 @@ namespace AnimeMovie.DataAccess.Migrations
                     b.Property<int>("UserID")
                         .HasColumnType("int");
 
+                    b.Property<bool>("isBlocked")
+                        .HasColumnType("bit");
+
                     b.HasKey("ID");
 
                     b.ToTable("UserBlockLists");
@@ -1062,9 +1117,6 @@ namespace AnimeMovie.DataAccess.Migrations
                     b.Property<DateTime>("CreateTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("ListID")
-                        .HasColumnType("int");
-
                     b.Property<string>("ListName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -1073,8 +1125,6 @@ namespace AnimeMovie.DataAccess.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("ID");
-
-                    b.HasIndex("ListID");
 
                     b.ToTable("userLists");
                 });
@@ -1106,6 +1156,10 @@ namespace AnimeMovie.DataAccess.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("ID");
+
+                    b.HasIndex("ListID");
+
+                    b.HasIndex("UserID");
 
                     b.ToTable("UserListContents");
                 });
@@ -1193,6 +1247,9 @@ namespace AnimeMovie.DataAccess.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"), 1L, 1);
 
+                    b.Property<string>("About")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("BirthDay")
                         .HasColumnType("nvarchar(max)");
 
@@ -1224,9 +1281,6 @@ namespace AnimeMovie.DataAccess.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("UserID")
-                        .HasColumnType("int");
-
                     b.Property<string>("UserName")
                         .HasColumnType("nvarchar(max)");
 
@@ -1235,9 +1289,59 @@ namespace AnimeMovie.DataAccess.Migrations
 
                     b.HasKey("ID");
 
-                    b.HasIndex("UserID");
-
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("AnimeMovie.Entites.AnimeList", b =>
+                {
+                    b.HasOne("AnimeMovie.Entites.Anime", "Anime")
+                        .WithMany()
+                        .HasForeignKey("AnimeID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AnimeMovie.Entites.AnimeEpisodes", "AnimeEpisode")
+                        .WithMany()
+                        .HasForeignKey("EpisodeID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Anime");
+
+                    b.Navigation("AnimeEpisode");
+                });
+
+            modelBuilder.Entity("AnimeMovie.Entites.CategoryType", b =>
+                {
+                    b.HasOne("AnimeMovie.Entites.Categories", "Categories")
+                        .WithMany()
+                        .HasForeignKey("CategoryID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Categories");
+                });
+
+            modelBuilder.Entity("AnimeMovie.Entites.Comments", b =>
+                {
+                    b.HasOne("AnimeMovie.Entites.Users", "Users")
+                        .WithMany()
+                        .HasForeignKey("UserID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Users");
+                });
+
+            modelBuilder.Entity("AnimeMovie.Entites.ContentNotification", b =>
+                {
+                    b.HasOne("AnimeMovie.Entites.Users", "User")
+                        .WithMany()
+                        .HasForeignKey("UserID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("AnimeMovie.Entites.FanArt", b =>
@@ -1251,11 +1355,64 @@ namespace AnimeMovie.DataAccess.Migrations
                     b.Navigation("Users");
                 });
 
-            modelBuilder.Entity("AnimeMovie.Entites.UserList", b =>
+            modelBuilder.Entity("AnimeMovie.Entites.MangaList", b =>
                 {
-                    b.HasOne("AnimeMovie.Entites.UserListContents", null)
-                        .WithMany("UserList")
-                        .HasForeignKey("ListID");
+                    b.HasOne("AnimeMovie.Entites.MangaEpisodes", "MangaEpisode")
+                        .WithMany()
+                        .HasForeignKey("EpisodeID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AnimeMovie.Entites.Manga", "Manga")
+                        .WithMany()
+                        .HasForeignKey("MangaID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Manga");
+
+                    b.Navigation("MangaEpisode");
+                });
+
+            modelBuilder.Entity("AnimeMovie.Entites.Review", b =>
+                {
+                    b.HasOne("AnimeMovie.Entites.Users", "User")
+                        .WithMany()
+                        .HasForeignKey("UserID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
+            modelBuilder.Entity("AnimeMovie.Entites.RosetteContent", b =>
+                {
+                    b.HasOne("AnimeMovie.Entites.Rosette", "Rosette")
+                        .WithMany()
+                        .HasForeignKey("RosetteID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Rosette");
+                });
+
+            modelBuilder.Entity("AnimeMovie.Entites.UserListContents", b =>
+                {
+                    b.HasOne("AnimeMovie.Entites.UserList", "UserList")
+                        .WithMany()
+                        .HasForeignKey("ListID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AnimeMovie.Entites.Users", "Users")
+                        .WithMany()
+                        .HasForeignKey("UserID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("UserList");
+
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("AnimeMovie.Entites.UserRosette", b =>
@@ -1267,23 +1424,6 @@ namespace AnimeMovie.DataAccess.Migrations
                         .IsRequired();
 
                     b.Navigation("Rosette");
-                });
-
-            modelBuilder.Entity("AnimeMovie.Entites.Users", b =>
-                {
-                    b.HasOne("AnimeMovie.Entites.Review", null)
-                        .WithMany("User")
-                        .HasForeignKey("UserID");
-                });
-
-            modelBuilder.Entity("AnimeMovie.Entites.Review", b =>
-                {
-                    b.Navigation("User");
-                });
-
-            modelBuilder.Entity("AnimeMovie.Entites.UserListContents", b =>
-                {
-                    b.Navigation("UserList");
                 });
 #pragma warning restore 612, 618
         }
