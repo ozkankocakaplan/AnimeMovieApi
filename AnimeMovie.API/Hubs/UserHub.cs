@@ -5,12 +5,24 @@ using Microsoft.AspNetCore.Authorization;
 using AnimeMovie.Business.Abstract;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
+public class HubUserModel:Users
+{
+    public string connectionID { get; set; }
+    public HubUserModel(Users users)
+    {
+        this.ID = users.ID;
+        this.Image = users.Image;
+        this.SeoUrl = users.SeoUrl;
+        this.UserName = users.UserName;
+        this.NameSurname = users.NameSurname;
+    }
+}
 namespace AnimeMovie.API.Hubs
 {
     [Authorize]
     public class UserHub : Hub
     {
-        static Dictionary<string, Users> userList = new Dictionary<string, Users>();
+        static List<HubUserModel> userList = new List<HubUserModel>();
        
         private readonly IUsersService userService;
         private readonly IUserMessageService userMessageService;
@@ -19,49 +31,50 @@ namespace AnimeMovie.API.Hubs
             userMessageService = userMessage;
             userService = users;
         }
-
-        public void connect()
+        public override Task OnConnectedAsync()
         {
             var userID = Handler.UserID(Context.GetHttpContext());
             var user = userService.get(x => x.ID == userID).Entity;
             if (user != null)
             {
-                var checkUser = userList.Where(x => x.Value.ID == userID).FirstOrDefault();
-                if(checkUser.Key != null)
-                {
-                    userList.Remove(checkUser.Key);
-                }
-              
-                userList.Add(Context.ConnectionId, user);
+                HubUserModel userModel = new HubUserModel(user);
+                userModel.connectionID = Context.ConnectionId;
+                userList.Add(userModel);
+                Clients.Client(Context.ConnectionId).SendAsync("getID", Context.ConnectionId);
             }
+            return base.OnConnectedAsync();
         }
         public async Task sendUserMessage(UserMessage userMessage)
         {
  
-            var getUser = userList.Where((y) => y.Value.ID == userMessage.ReceiverID).FirstOrDefault();
+            var getUsers = userList.Where((y) => y.ID == userMessage.ReceiverID);
             var message = userMessageService.add(userMessage).Entity;
-            //if (getUser.Value != null)
-            //{
-            //    foreach (var item in userList.Where(y=>y.Value.ID != userMessage.SenderID))
-            //    {
-            //        await Clients.Client(getUser.Key).SendAsync("messageSent", message);
-            //    }
-
-            //}
-            //foreach (var item in userList)
-            //{
-            //    await Clients.Client(item.Key).SendAsync("messageSent", message);
-            //}
-            await Clients.All.SendAsync("messageSent",message);
+            if (getUsers != null && getUsers.Count() != 0)
+            {
+                foreach (var user in getUsers)
+                {
+                    await Clients.Client(user.connectionID).SendAsync("messageSent", message);
+                }
+              
+            }
+            //await Clients.Client().SendAsync("messageSent",message);
 
         }
         public override Task OnDisconnectedAsync(Exception? exception)
         {
-            var checkUser = userList.Where(x => x.Key == Context.ConnectionId).SingleOrDefault();
-            if (checkUser.Key != null)
+            try
             {
-                userList.Remove(checkUser.Key);
+                var checkUser = userList.Where(x => x.connectionID == Context.ConnectionId).SingleOrDefault();
+                if (checkUser != null)
+                {
+                    userList.Remove(checkUser);
+                }
             }
+            catch (Exception ex)
+            {
+
+            }
+           
             return base.OnDisconnectedAsync(exception);
         }
     }

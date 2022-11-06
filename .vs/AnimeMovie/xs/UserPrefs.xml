@@ -1,11 +1,8 @@
 ﻿<Properties StartupConfiguration="{36613161-7983-4322-990B-F567FDAA2016}|Default">
-  <MonoDevelop.Ide.Workbench ActiveDocument="AnimeMovie.API/Program.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="AnimeMovie.API/Models/UserMessageModel.cs">
     <Files>
-      <File FileName="AnimeMovie.API/Hubs/UserHub.cs" />
-      <File FileName="AnimeMovie.Entites/UserMessage.cs" />
-      <File FileName="AnimeMovie.DataAccess/Concrete/UserMessageRepository.cs" />
-      <File FileName="AnimeMovie.Business/Concrete/UserMessageManager.cs" />
-      <File FileName="AnimeMovie.API/Program.cs" Line="228" Column="1" />
+      <File FileName="AnimeMovie.API/Controllers/UserController.cs" />
+      <File FileName="AnimeMovie.API/Models/UserMessageModel.cs" Line="22" Column="1" />
     </Files>
     <Pads>
       <Pad Id="ProjectPad">
@@ -13,27 +10,22 @@
           <Node name="AnimeMovie" expanded="True">
             <Node name="AnimeMovie.API" expanded="True">
               <Node name="Controllers" expanded="True" />
-              <Node name="Hubs" expanded="True" />
-              <Node name="Models" expanded="True" />
-              <Node name="Program.cs" selected="True" />
+              <Node name="Models" expanded="True">
+                <Node name="UserMessageModel.cs" selected="True" />
+              </Node>
             </Node>
-            <Node name="AnimeMovie.Business" expanded="True">
-              <Node name="Concrete" expanded="True" />
-            </Node>
-            <Node name="AnimeMovie.DataAccess" expanded="True">
-              <Node name="Concrete" expanded="True" />
-            </Node>
+            <Node name="AnimeMovie.DataAccess" expanded="True" />
             <Node name="AnimeMovie.Entites" expanded="True" />
           </Node>
         </State>
       </Pad>
     </Pads>
   </MonoDevelop.Ide.Workbench>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore />
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
-  <MultiItemStartupConfigurations />
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
-  <MonoDevelop.Ide.ItemProperties.AnimeMovie.API PreferredExecutionTarget="/Applications/Safari.app" />
+  <MonoDevelop.Ide.ItemProperties.AnimeMovie.API PreferredExecutionTarget="/System/Volumes/Preboot/Cryptexes/App/System/Applications/Safari.app" />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MultiItemStartupConfigurations />
 </Properties>

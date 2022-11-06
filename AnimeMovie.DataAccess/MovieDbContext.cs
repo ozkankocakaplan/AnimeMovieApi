@@ -12,7 +12,7 @@ namespace AnimeMovie.DataAccess
         //protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         //{
         //    base.OnConfiguring(optionsBuilder);
-        //    optionsBuilder.UseSqlServer("server=94.199.202.242,1433;database=lycorisa_AnimeMovieDB;User=animemoviedb;password=2423461663Oo.!");
+        //    optionsBuilder.UseSqlServer("server=127.0.0.1,1433;database=AnimeMovieDB;User=sa;password=3461663Oo.");
         //}
 
         public DbSet<Anime> Animes { get; set; }

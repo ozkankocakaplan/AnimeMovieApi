@@ -207,18 +207,17 @@ namespace AnimeMovie.API.Controllers
                 animeModel.LikeCount = likeService.getList(x => x.ContentID == getAnime.Entity.ID && x.Type == Entites.Type.Anime).List.ToList().Count;
                 animeModel.ViewsCount = animeListService.getList(x => x.AnimeID == getAnime.Entity.ID && x.AnimeStatus == AnimeStatus.IWatched).List.ToList().Count;
                 animeModel.Manga = mangaService.get(x => x.AnimeID == getAnime.Entity.ID).Entity;
-                animeModel.animeLists = animeListService.getList(x => x.AnimeID == getAnime.Entity.ID).List.ToList();
-                List<Episodes> episodes = new List<Episodes>();
-                foreach (var item in animeEpisodes)
+                animeModel.animeLists = animeListService.getList(x => x.AnimeID == getAnime.Entity.ID && x.UserID == userID).List.ToList();
+                animeModel.AnimeImages = animeImageService.getList(x => x.AnimeID == getAnime.Entity.ID).List.ToList();
+                List<Episodes> episodeList = new List<Episodes>();
+                foreach (var episode in animeEpisodes)
                 {
-                    var episode = episodesService.get(x => x.EpisodeID == item.ID).Entity;
-                    if (episode != null)
+                    foreach (var content in episodesService.getList(x=>x.EpisodeID == episode.ID).List)
                     {
-                        episodes.Add(episode);
+                        episodeList.Add(content);
                     }
-
                 }
-                animeModel.Episodes = episodes;
+                animeModel.Episodes = episodeList;
                 var ratingCount = ratingsService.getList(x => x.AnimeID == getAnime.Entity.ID).List.ToList().Count;
                 animeModel.Rating = ratingCount / 10;
 

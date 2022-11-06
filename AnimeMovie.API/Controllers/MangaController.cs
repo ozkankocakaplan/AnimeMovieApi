@@ -24,12 +24,14 @@ namespace AnimeMovie.API.Controllers
         private readonly ICategoryTypeService categoryTypeService;
         private readonly IRatingsService ratingsService;
         private readonly IMangaListService mangaListService;
+        private readonly IAnimeService animeService;
         private readonly IContentNotificationService contentNotificationService;
         public MangaController(IMangaService manga, IWebHostEnvironment webHost,
-            IContentNotificationService contentNotification,
+            IContentNotificationService contentNotification,IAnimeService anime,
             ICategoryTypeService categoryType,IRatingsService ratings,IMangaListService mangaList,
             IMangaEpisodeContentService mangaEpisodeContent,ILikeService like, IMangaEpisodesService mangaEpisodes, IMangaImageService mangaImage)
         {
+            animeService = anime;
             contentNotificationService = contentNotification;
             mangaListService = mangaList;
             ratingsService = ratings;
@@ -205,11 +207,51 @@ namespace AnimeMovie.API.Controllers
             var response = mangaService.getPaginatedManga(pageNo, showCount);
             return Ok(response);
         }
+        [Roles(Roles = RolesAttribute.All)]
         [HttpGet]
         [Route("/getManga/{mangaUrl}")]
         public IActionResult getManga(string mangaUrl)
         {
-            var response = mangaService.getList(x => x.SeoUrl == mangaUrl);
+            var userID = Handler.UserID(HttpContext);
+            var manga = mangaService.get(x => x.SeoUrl == mangaUrl).Entity;
+            var response = new ServiceResponse<MangaModels>();
+            if(manga != null)
+            {
+               
+                MangaModels mangaModel = new MangaModels();
+                mangaModel.Manga = manga;
+                mangaModel.MangaRating = ratingsService.get(x => x.UserID == userID).Entity;
+                mangaModel.Like = likeService.get(x => x.UserID == userID && x.ContentID == manga.ID && x.Type == Entites.Type.Manga).Entity;
+                mangaModel.Anime = animeService.get(x => x.ID == manga.AnimeID).Entity;
+                mangaModel.Categories = categoryTypeService.getList(x => x.Type == Entites.Type.Manga && x.ContentID == manga.ID).List.ToList();
+                mangaModel.Arrangement = 1;
+                var mangaEpisodes = mangaEpisodesService.getList(x => x.MangaID == manga.ID).List.ToList();
+                mangaModel.MangaEpisodes = mangaEpisodes;
+                mangaModel.MangaLists = mangaListService.getList(x => x.MangaID == manga.ID && x.UserID == userID).List.ToList();
+                mangaModel.ContentNotification = contentNotificationService.get(x => x.ContentID == manga.ID && x.Type == Entites.Type.Manga).Entity;
+                mangaModel.LikeCount = likeService.getList(x => x.ContentID == manga.ID && x.Type == Entites.Type.Manga).List.ToList().Count;
+                mangaModel.ViewsCount = mangaListService.getList(x => x.MangaID == manga.ID && x.Status == MangaStatus.IRead).List.ToList().Count;
+                var ratingCount = ratingsService.getList(x => x.Type == Entites.Type.Manga && x.AnimeID == manga.ID).List.ToList().Count;
+                mangaModel.Rating = (ratingCount / 10) == 0 ? 1 : ratingCount / 10;
+                mangaModel.MangaEpisodeCount = mangaEpisodesService.getList(x => x.MangaID == manga.ID).List.Count();
+                List<MangaEpisodeContent> episodeContents = new List<MangaEpisodeContent>();
+                foreach (var episode in mangaEpisodes)
+                {
+                    foreach (var content in mangaEpisodeContentService.getList(x=>x.EpisodeID == episode.ID).List.ToList())
+                    {
+                        episodeContents.Add(content);
+                    }
+                }
+                mangaModel.MangaEpisodeContents = episodeContents;
+                response.Entity = mangaModel;
+                response.IsSuccessful = true;
+            }
+            else
+            {
+                response.IsSuccessful = false;
+                response.ExceptionMessage = "Not Found";
+                response.HasExceptionError = true;
+            }
             return Ok(response);
         }
         [HttpGet]

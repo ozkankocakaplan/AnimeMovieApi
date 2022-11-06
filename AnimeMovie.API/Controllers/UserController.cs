@@ -2,6 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Net.Mail;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using AnimeMovie.API.Models;
@@ -363,6 +365,17 @@ namespace AnimeMovie.API.Controllers
                 {
                     var getUserEmail = userEmailVertificationService.delete(x => x.Email == email);
                     var code = Handler.createData();
+                    MailMessage mail = new MailMessage();
+                    mail.Subject = "Deneme";
+                    mail.Body = code;
+                    mail.From = new MailAddress("info@lycorisa.com", "ANİME");
+                    mail.To.Add( new MailAddress(email));
+                    SmtpClient smtp = new SmtpClient("srvm09.trwww.com", 587);
+                    smtp.EnableSsl = true;
+                    smtp.UseDefaultCredentials = false;
+                    smtp.Credentials = new NetworkCredential("info@lycorisa.com", "7vLHchT2");
+                    smtp.DeliveryMethod = SmtpDeliveryMethod.Network;
+                    smtp.Send(mail);
                     var response = userEmailVertificationService.add(new UserEmailVertification() { Email = email, Code = code });
                     return Ok(response);
                 }
@@ -753,7 +766,7 @@ namespace AnimeMovie.API.Controllers
             var userID = Handler.UserID(HttpContext);
             if (like.ContentID != 0 && like.UserID == userID)
             {
-                var get = likeService.get(x => x.ContentID == like.ContentID && x.UserID == userID).Entity;
+                var get = likeService.get(x => x.ContentID == like.ContentID && x.UserID == userID && x.Type == like.Type).Entity;
                 if (get == null)
                 {
                     var response = likeService.add(like);
@@ -847,6 +860,43 @@ namespace AnimeMovie.API.Controllers
         #endregion
 
         #region Message
+        [HttpGet]
+        [Route("/getSearchUser/{userName}")]
+        [Roles(Roles = RolesAttribute.All)]
+        public IActionResult getSearchUser(string userName)
+        {
+            var userID = Handler.UserID(HttpContext);
+            var getUserList = usersService.getList(x => x.UserName.Contains(userName));
+            var response = new ServiceResponse<UserMessageModel>();
+            List<UserMessageModel> userMessageModels = new List<UserMessageModel>();
+            foreach (var item in getUserList.List)
+            {
+                 if(item.ID != userID)
+                {
+                    var messageList = userMessageService.getList(x => x.SenderID == userID || x.ReceiverID == userID).List.Select(x => x.ReceiverID == userID ? x.SenderID : x.ReceiverID).Distinct().ToList();
+                    UserMessageModel userMessage = new UserMessageModel(item);
+                    if(messageList.Count != 0)
+                    {
+                        foreach (var message in messageList)
+                        {
+                            userMessage.userMessages = userMessageService.getList((y) => y.SenderID == userID || y.ReceiverID == userID).List.ToList();
+                            userMessageModels.Add(userMessage);
+                        }
+                    }
+                    else
+                    {
+                        userMessage.userMessages = new List<UserMessage>();
+                        userMessageModels.Add(userMessage);
+                    }
+                    
+                }
+               
+            }
+            response.List = userMessageModels;
+            response.Count = userMessageModels.Count;
+            response.IsSuccessful = true;
+            return Ok(response);
+        }
         [HttpGet]
         [Route("/getMessages")]
         [Roles(Roles = RolesAttribute.All)]

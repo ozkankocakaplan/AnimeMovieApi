@@ -16,6 +16,7 @@ namespace AnimeMovie.API.Models
         public List<AnimeEpisodes> AnimeEpisodes { get; set; }
         public List<Episodes> Episodes { get; set; }
         public List<AnimeList> animeLists { get; set; }
+        public List<AnimeImages> AnimeImages { get; set; }
         public double Rating { get; set; }
         public int Arrangement { get; set; }
         public int LikeCount { get; set; }
