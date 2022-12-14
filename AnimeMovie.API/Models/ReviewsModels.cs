@@ -9,6 +9,7 @@ namespace AnimeMovie.API.Models
         public Manga Manga { get; set; }
         public List<Like> Likes { get; set; }
         public List<Comments> Comments { get; set; }
+        public List<CategoryType> categories { get; set; }
         public ReviewsModels(Review review)
         {
             this.ID = review.ID;

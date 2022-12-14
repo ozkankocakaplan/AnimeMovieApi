@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Net;
+using System.Net.Mail;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.AspNetCore.Hosting;
 
 namespace AnimeMovie.API
 {
@@ -45,6 +48,34 @@ namespace AnimeMovie.API
             builder.Append(rnd.Next(100, 999));
             builder.Append(RandomData());
             return builder.ToString();
+        }
+        public static string EmailTemplate(IWebHostEnvironment webHost,string head,string body)
+        {
+            string template = String.Empty;
+            using (var reader = new System.IO.StreamReader(webHost.WebRootPath + "/emailTemplate.txt"))
+            {
+                string readFile = reader.ReadToEnd();
+                string content = readFile;
+                content = content.Replace("HEAD", head);
+                content = content.Replace("BODY", body);
+                template = content.ToString();
+            }
+            return template;
+        }
+        public static void SendEmail(IWebHostEnvironment webHostEnvironment,string email,string head,string body,string subject)
+        {
+            MailMessage mail = new MailMessage();
+            mail.Subject = subject;
+            mail.IsBodyHtml = true;
+            mail.Body = Handler.EmailTemplate(webHostEnvironment, head,body);
+            mail.From = new MailAddress("info@lycorisa.com", "ANİME");
+            mail.To.Add(new MailAddress(email));
+            SmtpClient smtp = new SmtpClient("srvm09.trwww.com", 587);
+            smtp.EnableSsl = true;
+            smtp.UseDefaultCredentials = false;
+            smtp.Credentials = new NetworkCredential("info@lycorisa.com", "7vLHchT2");
+            smtp.DeliveryMethod = SmtpDeliveryMethod.Network;
+            smtp.Send(mail);
         }
     }
 }

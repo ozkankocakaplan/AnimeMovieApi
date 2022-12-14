@@ -30,7 +30,9 @@ namespace AnimeMovie.Entites
     public enum ComplaintType
     {
         Video = 1,
-        Image = 2
+        Image = 2,
+        ContentAnime = 4,
+        ContentManga = 5
     }
     public enum AnimeStatus
     {

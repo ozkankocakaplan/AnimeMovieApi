@@ -14,7 +14,7 @@ namespace AnimeMovie.Entites
         public Status Status { get; set; }
         public string SeoUrl { get; set; }
         public string MalRating { get; set; }
-        public string SiteRating { get; set; }
+        public string? fansub { get; set; }
     }
 }
 

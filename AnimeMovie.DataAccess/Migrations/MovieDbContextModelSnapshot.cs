@@ -63,15 +63,14 @@ namespace AnimeMovie.DataAccess.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("SiteRating")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
                     b.Property<int>("VideoType")
                         .HasColumnType("int");
+
+                    b.Property<string>("fansub")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("ID");
 
@@ -681,15 +680,14 @@ namespace AnimeMovie.DataAccess.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("SiteRating")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
                     b.Property<int>("Views")
                         .HasColumnType("int");
+
+                    b.Property<string>("fansub")
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("ID");
 
@@ -1030,6 +1028,8 @@ namespace AnimeMovie.DataAccess.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("ID");
+
+                    b.HasIndex("UserID");
 
                     b.ToTable("socialMediaAccounts");
                 });
@@ -1394,6 +1394,17 @@ namespace AnimeMovie.DataAccess.Migrations
                         .IsRequired();
 
                     b.Navigation("Rosette");
+                });
+
+            modelBuilder.Entity("AnimeMovie.Entites.SocialMediaAccount", b =>
+                {
+                    b.HasOne("AnimeMovie.Entites.Users", "Users")
+                        .WithMany()
+                        .HasForeignKey("UserID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Users");
                 });
 
             modelBuilder.Entity("AnimeMovie.Entites.UserListContents", b =>

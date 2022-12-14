@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AnimeMovie.Business;
 using AnimeMovie.Business.Abstract;
 using AnimeMovie.Entites;
 using Microsoft.AspNetCore.Authorization;
@@ -30,8 +31,17 @@ namespace AnimeMovie.API.Controllers
         {
             if (category != null && category.Name.Length != 0)
             {
-                var response = categoriesService.add(category);
-                return Ok(response);
+                var check = categoriesService.get(x => x.Name == category.Name).Entity;
+                if (check == null)
+                {
+                    var response = categoriesService.add(category);
+                    return Ok(response);
+                }
+                else
+                {
+                    return Ok(new ServiceResponse<Categories>() { IsSuccessful = false, HasExceptionError = true });
+                }
+                
             }
             return Ok();
         }
@@ -42,8 +52,17 @@ namespace AnimeMovie.API.Controllers
         {
             if (category != null && category.Name.Length != 0 && category.ID != 0)
             {
-                var response = categoriesService.update(category);
-                return Ok(response);
+                var check = categoriesService.get(x => x.Name == category.Name && x.ID != category.ID).Entity;
+                if(check == null)
+                {
+                    var response = categoriesService.update(category);
+                    return Ok(response);
+                }
+                else
+                {
+                    return Ok(new ServiceResponse<Categories>() { IsSuccessful = false, HasExceptionError = true });
+                }
+                
             }
             return BadRequest();
         }

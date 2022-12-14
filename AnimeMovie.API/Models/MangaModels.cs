@@ -15,6 +15,7 @@ namespace AnimeMovie.API.Models
         public List<MangaEpisodeContent> MangaEpisodeContents { get; set; }
         public List<MangaImages> MangaImages { get; set; }
         public List<MangaList> MangaLists { get; set; }
+        public List<Comments> Comments { get; set; }
         public double Rating { get; set; }
         public int Arrangement { get; set; }
         public int LikeCount { get; set; }

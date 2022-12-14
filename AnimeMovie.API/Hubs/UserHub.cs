@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using AnimeMovie.Business.Abstract;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
-public class HubUserModel:Users
+public class HubUserModel : Users
 {
     public string connectionID { get; set; }
     public HubUserModel(Users users)
@@ -23,10 +23,10 @@ namespace AnimeMovie.API.Hubs
     public class UserHub : Hub
     {
         static List<HubUserModel> userList = new List<HubUserModel>();
-       
+
         private readonly IUsersService userService;
         private readonly IUserMessageService userMessageService;
-        public UserHub(IUsersService users,IUserMessageService userMessage)
+        public UserHub(IUsersService users, IUserMessageService userMessage)
         {
             userMessageService = userMessage;
             userService = users;
@@ -46,7 +46,7 @@ namespace AnimeMovie.API.Hubs
         }
         public async Task sendUserMessage(UserMessage userMessage)
         {
- 
+
             var getUsers = userList.Where((y) => y.ID == userMessage.ReceiverID);
             var message = userMessageService.add(userMessage).Entity;
             if (getUsers != null && getUsers.Count() != 0)
@@ -55,7 +55,7 @@ namespace AnimeMovie.API.Hubs
                 {
                     await Clients.Client(user.connectionID).SendAsync("messageSent", message);
                 }
-              
+
             }
             //await Clients.Client().SendAsync("messageSent",message);
 
@@ -74,9 +74,43 @@ namespace AnimeMovie.API.Hubs
             {
 
             }
-           
+
             return base.OnDisconnectedAsync(exception);
         }
     }
+    public class User : Hub
+    {
+        public static List<string> onlineUsers = new List<string>();
+        public override Task OnConnectedAsync()
+        {
+            var context = Context.GetHttpContext();
+            var ip = context.Request.HttpContext.Connection.RemoteIpAddress.ToString();
+            if (!onlineUsers.Any(x => x == ip))
+            {
+                onlineUsers.Add(ip);
+            }
+            return base.OnConnectedAsync();
+        }
+        public override Task OnDisconnectedAsync(Exception? exception)
+        {
+            try
+            {
+                var context = Context.GetHttpContext();
+                var ip = context.Request.HttpContext.Connection.RemoteIpAddress.ToString();
+                if (onlineUsers.Any(x => x == ip))
+                {
+                    onlineUsers.Remove(ip);
+                }
+            }
+            catch (Exception ex)
+            {
+
+            }
+            
+            return base.OnDisconnectedAsync(exception);
+        }
+    }
+
 }
+
 

@@ -11,7 +11,7 @@ namespace AnimeMovie.API.Models
         public List<MangaListModels> MangaListModels { get; set; }
         public List<UserListModels> UserListModels { get; set; }
         public List<UserRosette> Rosettes { get; set; }
-        public List<FanArt> FanArts { get; set; }
+        public List<FanArtModel> FanArts { get; set; }
         public List<ReviewsModels> Reviews { get; set; }
         public List<AnimeList> AnimeLists { get; set; }
         public List<MangaList> MangaLists { get; set; }

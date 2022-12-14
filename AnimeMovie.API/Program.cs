@@ -8,13 +8,14 @@ using AnimeMovie.Business.Helper;
 using AnimeMovie.DataAccess;
 using AnimeMovie.DataAccess.Abstract;
 using AnimeMovie.DataAccess.Concrete;
+using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.WebHost.UseUrls("http://192.168.2.175:37323");
+builder.WebHost.UseUrls("http://192.168.1.107:37323");
 
 
 builder.Services.AddSignalR(ayar =>
@@ -54,8 +55,20 @@ builder.Services.AddControllers().AddJsonOptions(x => x.JsonSerializerOptions.Re
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-
-builder.Services.AddSignalR();
+builder.Services.AddHangfire(c =>
+{
+    //var ayar = new SqlServerStorageOptions
+    //{
+    //    PrepareSchemaIfNecessary = false,
+    //    QueuePollInterval = TimeSpan.FromMinutes(5)
+    //};
+    c.UseSqlServerStorage(builder.Configuration["ConnectionString"]);
+});
+builder.Services.AddSignalR(ayar =>
+{
+    ayar.EnableDetailedErrors = true;
+    ayar.KeepAliveInterval = TimeSpan.FromSeconds(10);
+});
 builder.Services.AddDbContext<MovieDbContext>(x => x.UseSqlServer(builder.Configuration["ConnectionString"]));
 builder.Services.AddSingleton(typeof(IGenericRepository<>), typeof(GenericRepository<>));
 builder.Services.AddScoped<ISeoUrl, SeoUrl>();
@@ -193,7 +206,7 @@ builder.Services.AddScoped<IUserListContentsService, UserListContentsManager>();
 
 builder.Services.AddScoped<IContentNotificationRepository, ContentNotificatonRepository>();
 builder.Services.AddScoped<IContentNotificationService, ContentNotificationManager>();
-
+builder.Services.AddScoped<AnimeMovie.API.Jobs.Recurring.UserLoginCheck>();
 
 var app = builder.Build();
 
@@ -207,23 +220,24 @@ DataSeeding.Seed(app);
 app.UseHttpsRedirection();
 app.UseCors(builder =>
 {
-    builder.WithOrigins("https://admin.lycorisa.com")
-    .AllowAnyHeader()
-    .AllowAnyMethod()
-    .AllowCredentials();
+
     builder.WithOrigins("http://localhost:3000")
    .AllowAnyHeader()
    .AllowAnyMethod()
    .AllowCredentials();
-    builder.WithOrigins("http://localhost:3001")
-  .AllowAnyHeader()
-  .AllowAnyMethod()
-  .AllowCredentials();
 });
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
+{
+    Authorization = new[] { new HangfireDashboardAuthorizationFilter() }
+});
+app.UseHangfireServer(new BackgroundJobServerOptions { WorkerCount = 1 });
+GlobalJobFilters.Filters.Add(new AutomaticRetryAttribute { Attempts = 0 });
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapHub<UserHub>("/userHub");
+app.MapHub<UserHub>("/userHubs");
+app.MapHub<User>("/users");
 app.MapControllers();
 app.UseStaticFiles();
+AnimeMovie.API.Jobs.HangfireJobScheduler.ScheduleRecurringJobs();
 app.Run();
 

@@ -27,12 +27,14 @@ namespace AnimeMovie.API.Controllers
         private readonly ILikeService likeService;
         private readonly IMangaService mangaService;
         private readonly IAnimeListService animeListService;
+        private readonly ICommentsService commentsService;
         public AnimeController(IWebHostEnvironment webHost, IMangaService manga,
             IAnimeService anime, IRatingsService ratings, IAnimeSeasonService animeSeason,
             IAnimeSeasonMusicService seasonMusic, IAnimeEpisodesService animeEpisodes, IEpisodesService episodes,
-            ILikeService like, IAnimeListService animeList,
+            ILikeService like, IAnimeListService animeList, ICommentsService comments,
             ICategoryTypeService categoryType, IAnimeImageService animeImage, IContentNotificationService contentNotification)
         {
+            commentsService = comments;
             mangaService = manga;
             animeListService = animeList;
             likeService = like;
@@ -48,6 +50,28 @@ namespace AnimeMovie.API.Controllers
             episodesService = episodes;
         }
         #region Anime
+        [HttpPost]
+        [Roles(Roles = RolesAttribute.AdminOrModerator)]
+        [Route("/addAutoEpisodes/{start}/{end}/{animeID}/{seasonID}")]
+        public IActionResult addAutoEpisode(int start, int end, int animeID, int seasonID)
+        {
+            List<AnimeEpisodes> animeEpisodes = new List<AnimeEpisodes>();
+            var response = new ServiceResponse<AnimeEpisodes>();
+            for (int i = start; i <= end; i++)
+            {
+                animeEpisodes.Add(animeEpisodesService.add(new AnimeEpisodes()
+                {
+                    AnimeID = animeID,
+                    SeasonID = seasonID,
+                    EpisodeName = i + ". Bölüm",
+                    EpisodeDescription = "Bölüm açıklamasını giriniz"
+                }).Entity);
+            }
+            response.List = animeEpisodes;
+            response.Count = animeEpisodes.Count;
+            response.IsSuccessful = true;
+            return Ok(response);
+        }
 
         [HttpPost]
         [Route("/addAnime")]
@@ -133,24 +157,25 @@ namespace AnimeMovie.API.Controllers
         }
         [HttpGet]
         [AllowAnonymous]
-        [Route("/getAnimes")]
+        [Route("/getAdminAnimes")]
         public IActionResult getAnimes()
         {
             var list = animeService.getList();
-            if(list.Count != 0)
+            var response = new ServiceResponse<AnimeModels>();
+            if (list.Count != 0)
             {
-                var response = new ServiceResponse<AnimeModels>();
                 List<AnimeModels> animeModels = new List<AnimeModels>();
                 foreach (var anime in list.List)
                 {
                     AnimeModels animeModel = new AnimeModels();
-                 
+
                     animeModel.Anime = anime;
-                    var animeEpisodes = animeEpisodesService.getList(x => x.AnimeID == anime.ID).List.ToList();                
+                    var animeEpisodes = animeEpisodesService.getList(x => x.AnimeID == anime.ID).List.ToList();
                     animeModel.AnimeEpisodes = animeEpisodes;
                     animeModel.AnimeSeasons = animeSeasonService.getList(x => x.AnimeID == anime.ID).List.ToList();
                     animeModel.Categories = categoryTypeService.getList(x => x.Type == Entites.Type.Anime && x.ContentID == anime.ID).List.ToList();
                     animeModel.Arrangement = 1;
+                    animeModel.Comments = commentsService.getList(x => x.Type == Entites.Type.Anime && x.ContentID == anime.ID).List.ToList();
                     animeModel.ContentNotification = contentNotificationService.get(x => x.ContentID == anime.ID && x.Type == Entites.Type.Anime).Entity;
                     animeModel.LikeCount = likeService.getList(x => x.ContentID == anime.ID && x.Type == Entites.Type.Anime).List.ToList().Count;
                     animeModel.ViewsCount = animeListService.getList(x => x.AnimeID == anime.ID && x.AnimeStatus == AnimeStatus.IWatched).List.ToList().Count;
@@ -161,11 +186,48 @@ namespace AnimeMovie.API.Controllers
                     animeModels.Add(animeModel);
                 }
                 response.List = animeModels;
-                response.Count = animeModels.Count;
                 response.IsSuccessful = true;
-                return Ok(response);
+
             }
-            return BadRequest();
+            response.Count = list.Count;
+            return Ok(response);
+        }
+        [HttpGet]
+        [AllowAnonymous]
+        [Route("/getAnimes/{pageNo}/{showCount}")]
+        public IActionResult getAnimes(int pageNo, int showCount)
+        {
+            var list = animeService.getPaginatedAnime(pageNo, showCount);
+            var response = new ServiceResponse<AnimeModels>();
+            if (list.Count != 0)
+            {
+                List<AnimeModels> animeModels = new List<AnimeModels>();
+                foreach (var anime in list.List)
+                {
+                    AnimeModels animeModel = new AnimeModels();
+
+                    animeModel.Anime = anime;
+                    var animeEpisodes = animeEpisodesService.getList(x => x.AnimeID == anime.ID).List.ToList();
+                    animeModel.AnimeEpisodes = animeEpisodes;
+                    animeModel.AnimeSeasons = animeSeasonService.getList(x => x.AnimeID == anime.ID).List.ToList();
+                    animeModel.Categories = categoryTypeService.getList(x => x.Type == Entites.Type.Anime && x.ContentID == anime.ID).List.ToList();
+                    animeModel.Arrangement = 1;
+                    animeModel.Comments = commentsService.getList(x => x.Type == Entites.Type.Anime && x.ContentID == anime.ID).List.ToList();
+                    animeModel.ContentNotification = contentNotificationService.get(x => x.ContentID == anime.ID && x.Type == Entites.Type.Anime).Entity;
+                    animeModel.LikeCount = likeService.getList(x => x.ContentID == anime.ID && x.Type == Entites.Type.Anime).List.ToList().Count;
+                    animeModel.ViewsCount = animeListService.getList(x => x.AnimeID == anime.ID && x.AnimeStatus == AnimeStatus.IWatched).List.ToList().Count;
+                    animeModel.Manga = mangaService.get(x => x.AnimeID == anime.ID).Entity;
+                    var ratingCount = ratingsService.getList(x => x.AnimeID == anime.ID).List.ToList().Count;
+                    animeModel.Rating = (ratingCount / 10) == 0 ? 1 : ratingCount / 10;
+
+                    animeModels.Add(animeModel);
+                }
+                response.List = animeModels;
+                response.IsSuccessful = true;
+
+            }
+            response.Count = list.Count;
+            return Ok(response);
         }
         [HttpGet]
         [AllowAnonymous]
@@ -212,7 +274,7 @@ namespace AnimeMovie.API.Controllers
                 List<Episodes> episodeList = new List<Episodes>();
                 foreach (var episode in animeEpisodes)
                 {
-                    foreach (var content in episodesService.getList(x=>x.EpisodeID == episode.ID).List)
+                    foreach (var content in episodesService.getList(x => x.EpisodeID == episode.ID).List)
                     {
                         episodeList.Add(content);
                     }
@@ -352,6 +414,8 @@ namespace AnimeMovie.API.Controllers
         [Roles(Roles = RolesAttribute.AdminOrModerator)]
         public IActionResult addAnimeImage([FromForm] List<IFormFile> files, int animeID)
         {
+            List<AnimeImages> animeImages = new List<AnimeImages>();
+            var response = new ServiceResponse<AnimeImages>();
             if (files != null && files.Count != 0)
             {
                 foreach (var file in files)
@@ -363,15 +427,18 @@ namespace AnimeMovie.API.Controllers
                         file.CopyTo(fs);
                         fs.Flush();
                     }
-                    animeImageService.add(new AnimeImages()
+                    var entity = animeImageService.add(new AnimeImages()
                     {
                         AnimeID = animeID,
                         Img = "/anime/" + guid + file.FileName,
-                    });
-                }
-                return Ok();
+                    }).Entity;
+                    animeImages.Add(entity);
+                }               
             }
-            return BadRequest();
+            response.Count = animeImages.Count;
+            response.IsSuccessful = true;
+            response.List = animeImages;
+            return Ok(response);
         }
         [HttpDelete]
         [Route("/deleteAnimeImage/{id}")]

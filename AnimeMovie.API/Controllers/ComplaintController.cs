@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AnimeMovie.API.Models;
+using AnimeMovie.Business;
 using AnimeMovie.Business.Abstract;
 using AnimeMovie.Entites;
 using Microsoft.AspNetCore.Mvc;
@@ -15,10 +17,26 @@ namespace AnimeMovie.API.Controllers
     {
         private readonly IComplaintListService complaintListService;
         private readonly IContentComplaintService contentComplaintService;
-        public ComplaintController(IComplaintListService complaintList, IContentComplaintService contentComplaint)
+        private readonly IAnimeService animeService;
+        private readonly IMangaService mangaService;
+        private readonly IUsersService usersService;
+        private readonly IAnimeEpisodesService animeEpisodesService;
+        private readonly IMangaEpisodesService mangaEpisodesService;
+        private readonly IFanArtService fanArtService;
+        private readonly IReviewService reviewService;
+        public ComplaintController(IComplaintListService complaintList, IContentComplaintService contentComplaint,
+            IAnimeService anime, IMangaService manga, IUsersService users, IAnimeEpisodesService animeEpisodes, IMangaEpisodesService mangaEpisodes,
+            IFanArtService fanArt, IReviewService review)
         {
             complaintListService = complaintList;
             contentComplaintService = contentComplaint;
+            animeService = anime;
+            mangaService = manga;
+            usersService = users;
+            animeEpisodesService = animeEpisodes;
+            mangaEpisodesService = mangaEpisodes;
+            fanArtService = fanArt;
+            reviewService = review;
         }
 
         #region UserComplaint
@@ -37,7 +55,7 @@ namespace AnimeMovie.API.Controllers
         }
         [HttpGet]
         [Route("/getComplaints")]
-        [Roles(Roles = RolesAttribute.AdminOrModerator)]
+        [Roles(Roles = RolesAttribute.All)]
         public IActionResult getComplaints()
         {
             var response = complaintListService.getComplaintListModels();
@@ -45,7 +63,7 @@ namespace AnimeMovie.API.Controllers
         }
         [HttpGet]
         [Route("/getComplaintsByUserID")]
-        [Roles(Roles = RolesAttribute.AdminOrModerator)]
+        [Roles(Roles = RolesAttribute.All)]
         public IActionResult getComplaintsByUserID()
         {
             var userID = Handler.UserID(HttpContext);
@@ -54,7 +72,7 @@ namespace AnimeMovie.API.Controllers
         }
         [HttpDelete]
         [Route("/deleteComplaint")]
-        [Roles(Roles = RolesAttribute.AdminOrModerator)]
+        [Roles(Roles = RolesAttribute.All)]
         public IActionResult deleteComplaint([FromBody] List<int> list)
         {
             if (list != null && list.Count != 0)
@@ -84,18 +102,63 @@ namespace AnimeMovie.API.Controllers
         }
         [HttpDelete]
         [Route("/deleteContentComplaint/{id}")]
-        [Roles(Roles = RolesAttribute.AdminOrModerator)]
+        [Roles(Roles = RolesAttribute.All)]
         public IActionResult deleteContentComplaint(int id)
         {
             var response = contentComplaintService.delete(x => x.ID == id);
             return Ok(response);
         }
         [HttpGet]
-        [Route("/getContentComplaint/{pageNo}/{showCount}")]
+        [Route("/getContentComplaint")]
         [Roles(Roles = RolesAttribute.AdminOrModerator)]
-        public IActionResult getContentComplaint(int pageNo = 1, int showCount = 10)
+        public IActionResult getContentComplaint()
         {
-            var response = contentComplaintService.getListPagined(pageNo, showCount);
+            var response = new ServiceResponse<ComplaintContentModels>();
+            var contentComplaints = contentComplaintService.getList();
+            List<ComplaintContentModels> list = new List<ComplaintContentModels>();
+            foreach (var content in contentComplaints.List)
+            {
+                ComplaintContentModels complaintContent = new ComplaintContentModels(content);
+                complaintContent.User = usersService.get(x => x.ID == content.UserID).Entity;
+                if (content.type == Entites.Type.Anime)
+                {
+                    var episode = complaintContent.AnimeEpisode = animeEpisodesService.get(x => x.ID == content.ContentID).Entity;
+                    if (episode != null)
+                    {
+                        complaintContent.Anime = animeService.get(x => x.ID == episode.AnimeID).Entity;
+                    }
+
+                }
+                else if (content.type == Entites.Type.Manga)
+                {
+                    var episode = complaintContent.MangaEpisode = mangaEpisodesService.get(x => x.ID == content.ContentID).Entity;
+                    if (episode != null)
+                    {
+                        complaintContent.Manga = mangaService.get(x => x.ID == episode.MangaID).Entity;
+                    }
+                }
+                else if (content.ComplaintType == ComplaintType.ContentAnime)
+                {
+                    var episode = complaintContent.AnimeEpisode = animeEpisodesService.get(x => x.ID == content.ContentID).Entity;
+                    if (episode != null)
+                    {
+                        complaintContent.Anime = animeService.get(x => x.ID == episode.AnimeID).Entity;
+                    }
+                }
+                else if (content.ComplaintType == ComplaintType.ContentManga)
+                {
+                    var episode = complaintContent.MangaEpisode = mangaEpisodesService.get(x => x.ID == content.ContentID).Entity;
+                    if (episode != null)
+                    {
+                        complaintContent.Manga = mangaService.get(x => x.ID == episode.MangaID).Entity;
+                    }
+                }
+
+                list.Add(complaintContent);
+            }
+            response.List = list;
+            response.Count = list.Count;
+            response.IsSuccessful = true;
             return Ok(response);
         }
         #endregion

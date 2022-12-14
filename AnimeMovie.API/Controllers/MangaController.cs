@@ -26,11 +26,13 @@ namespace AnimeMovie.API.Controllers
         private readonly IMangaListService mangaListService;
         private readonly IAnimeService animeService;
         private readonly IContentNotificationService contentNotificationService;
+        private readonly ICommentsService commentsService;
         public MangaController(IMangaService manga, IWebHostEnvironment webHost,
-            IContentNotificationService contentNotification,IAnimeService anime,
-            ICategoryTypeService categoryType,IRatingsService ratings,IMangaListService mangaList,
-            IMangaEpisodeContentService mangaEpisodeContent,ILikeService like, IMangaEpisodesService mangaEpisodes, IMangaImageService mangaImage)
+            IContentNotificationService contentNotification, IAnimeService anime,
+            ICategoryTypeService categoryType, IRatingsService ratings, IMangaListService mangaList, ICommentsService comments,
+            IMangaEpisodeContentService mangaEpisodeContent, ILikeService like, IMangaEpisodesService mangaEpisodes, IMangaImageService mangaImage)
         {
+            commentsService = comments;
             animeService = anime;
             contentNotificationService = contentNotification;
             mangaListService = mangaList;
@@ -162,19 +164,20 @@ namespace AnimeMovie.API.Controllers
             return Ok();
         }
         [HttpGet]
-        [Route("/getMangas")]
+        [Route("/getAdminMangas")]
         public IActionResult getMangas()
         {
             var list = mangaService.getList();
-            if(list.Count != 0)
+            var response = new ServiceResponse<MangaModels>();
+            if (list.Count != 0)
             {
-                var response = new ServiceResponse<MangaModels>();
+
                 List<MangaModels> mangaModels = new List<MangaModels>();
                 foreach (var manga in list.List)
                 {
                     MangaModels mangaModel = new MangaModels();
                     mangaModel.Manga = manga;
-
+                    mangaModel.Comments = commentsService.getList(x => x.ContentID == manga.ID && x.Type == Entites.Type.Manga).List.ToList();
                     mangaModel.Categories = categoryTypeService.getList(x => x.Type == Entites.Type.Manga && x.ContentID == manga.ID).List.ToList();
                     mangaModel.Arrangement = 1;
                     mangaModel.ContentNotification = contentNotificationService.get(x => x.ContentID == manga.ID && x.Type == Entites.Type.Manga).Entity;
@@ -182,16 +185,49 @@ namespace AnimeMovie.API.Controllers
                     mangaModel.ViewsCount = mangaListService.getList(x => x.MangaID == manga.ID && x.Status == MangaStatus.IRead).List.ToList().Count;
                     var ratingCount = ratingsService.getList(x => x.Type == Entites.Type.Manga && x.AnimeID == manga.ID).List.ToList().Count;
                     mangaModel.Rating = (ratingCount / 10) == 0 ? 1 : ratingCount / 10;
-                    mangaModel.MangaEpisodeCount = mangaEpisodesService.getList(x=>x.MangaID == manga.ID).List.Count();
+                    mangaModel.MangaEpisodeCount = mangaEpisodesService.getList(x => x.MangaID == manga.ID).List.Count();
                     mangaModels.Add(mangaModel);
                 }
                 response.List = mangaModels;
-                response.Count = mangaModels.Count;
+
                 response.IsSuccessful = true;
-                return Ok(response);
+
             }
-            
-            return BadRequest();
+            response.Count = list.Count;
+            return Ok(response);
+        }
+        [HttpGet]
+        [Route("/getMangas/{pageNo}/{showCount}")]
+        public IActionResult getMangas(int pageNo, int showCount)
+        {
+            var list = mangaService.getPaginatedManga(pageNo, showCount);
+            var response = new ServiceResponse<MangaModels>();
+            if (list.Count != 0)
+            {
+
+                List<MangaModels> mangaModels = new List<MangaModels>();
+                foreach (var manga in list.List)
+                {
+                    MangaModels mangaModel = new MangaModels();
+                    mangaModel.Manga = manga;
+                    mangaModel.Comments = commentsService.getList(x => x.ContentID == manga.ID && x.Type == Entites.Type.Manga).List.ToList();
+                    mangaModel.Categories = categoryTypeService.getList(x => x.Type == Entites.Type.Manga && x.ContentID == manga.ID).List.ToList();
+                    mangaModel.Arrangement = 1;
+                    mangaModel.ContentNotification = contentNotificationService.get(x => x.ContentID == manga.ID && x.Type == Entites.Type.Manga).Entity;
+                    mangaModel.LikeCount = likeService.getList(x => x.ContentID == manga.ID && x.Type == Entites.Type.Manga).List.ToList().Count;
+                    mangaModel.ViewsCount = mangaListService.getList(x => x.MangaID == manga.ID && x.Status == MangaStatus.IRead).List.ToList().Count;
+                    var ratingCount = ratingsService.getList(x => x.Type == Entites.Type.Manga && x.AnimeID == manga.ID).List.ToList().Count;
+                    mangaModel.Rating = (ratingCount / 10) == 0 ? 1 : ratingCount / 10;
+                    mangaModel.MangaEpisodeCount = mangaEpisodesService.getList(x => x.MangaID == manga.ID).List.Count();
+                    mangaModels.Add(mangaModel);
+                }
+                response.List = mangaModels;
+
+                response.IsSuccessful = true;
+
+            }
+            response.Count = list.Count;
+            return Ok(response);
         }
         [HttpGet]
         [Route("/getSearchDetailsMangas/{text}")]
@@ -215,9 +251,9 @@ namespace AnimeMovie.API.Controllers
             var userID = Handler.UserID(HttpContext);
             var manga = mangaService.get(x => x.SeoUrl == mangaUrl).Entity;
             var response = new ServiceResponse<MangaModels>();
-            if(manga != null)
+            if (manga != null)
             {
-               
+
                 MangaModels mangaModel = new MangaModels();
                 mangaModel.Manga = manga;
                 mangaModel.MangaRating = ratingsService.get(x => x.UserID == userID).Entity;
@@ -237,7 +273,7 @@ namespace AnimeMovie.API.Controllers
                 List<MangaEpisodeContent> episodeContents = new List<MangaEpisodeContent>();
                 foreach (var episode in mangaEpisodes)
                 {
-                    foreach (var content in mangaEpisodeContentService.getList(x=>x.EpisodeID == episode.ID).List.ToList())
+                    foreach (var content in mangaEpisodeContentService.getList(x => x.EpisodeID == episode.ID).List.ToList())
                     {
                         episodeContents.Add(content);
                     }
@@ -395,6 +431,17 @@ namespace AnimeMovie.API.Controllers
         }
         [HttpDelete]
         [Roles(Roles = RolesAttribute.AdminOrModerator)]
+        [Route("/deleteMangaEpisodeContents")]
+        public IActionResult deleteMangaEpisodeContents([FromBody] List<int> episodes)
+        {
+            foreach (var episode in episodes)
+            {
+                mangaEpisodeContentService.delete(x => x.ID == episode);
+            }
+            return Ok();
+        }
+        [HttpDelete]
+        [Roles(Roles = RolesAttribute.AdminOrModerator)]
         [Route("/deleteMangaEpisodeContent/{episodeID}")]
         public IActionResult deleteMangaEpisodeContent(int episodeID)
         {
@@ -417,6 +464,8 @@ namespace AnimeMovie.API.Controllers
         [Roles(Roles = RolesAttribute.AdminOrModerator)]
         public IActionResult addMangaImage([FromForm] List<IFormFile> files, int mangaID)
         {
+            List<MangaImages> mangaImages = new List<MangaImages>();
+            var response = new ServiceResponse<MangaImages>();
             if (files != null && files.Count != 0)
             {
                 foreach (var file in files)
@@ -428,15 +477,19 @@ namespace AnimeMovie.API.Controllers
                         file.CopyTo(fs);
                         fs.Flush();
                     }
-                    mangaImageService.add(new MangaImages()
+                    var entity = mangaImageService.add(new MangaImages()
                     {
                         MangaID = mangaID,
                         Img = "/manga/" + guid + file.FileName,
-                    });
+                    }).Entity;
+                    mangaImages.Add(entity);
                 }
-                return Ok();
+
             }
-            return BadRequest();
+            response.Count = mangaImages.Count;
+            response.IsSuccessful = true;
+            response.List = mangaImages;
+            return Ok(response);
         }
         [HttpDelete]
         [Route("/deleteMangaImage/{id}")]
@@ -460,6 +513,55 @@ namespace AnimeMovie.API.Controllers
             return Ok(response);
         }
         #endregion
+        [HttpPost]
+        [Roles(Roles = RolesAttribute.AdminOrModerator)]
+        [Route("/addAutoMangaEpisodes/{start}/{end}/{mangaID}")]
+        public IActionResult addAutoMangaEpisodes(int start, int end, int mangaID)
+        {
+            List<MangaEpisodes> mangaEpisodes = new List<MangaEpisodes>();
+            var response = new ServiceResponse<MangaEpisodes>();
+            for (int i = start; i <= end; i++)
+            {
+                mangaEpisodes.Add(mangaEpisodesService.add(new MangaEpisodes()
+                {
+                    MangaID = mangaID,
+                    Name = i + ". Bölüm",
+                    Description = "Bölüm açıklamasını giriniz",
+                }).Entity);
+            }
+            response.List = mangaEpisodes;
+            response.Count = mangaEpisodes.Count;
+            response.IsSuccessful = true;
+            return Ok(response);
+        }
+        [HttpPost]
+        [Roles(Roles = RolesAttribute.AdminOrModerator)]
+        [Route("/addAutoMangaEpisodeContents/{start}/{end}/{episodeID}")]
+        public IActionResult addAutoMangaEpisodeContents(int start, int end, int episodeID)
+        {
+            List<MangaEpisodeContent> mangaEpisodeContents = new List<MangaEpisodeContent>();
+            var contentLastOrderCount = mangaEpisodeContentService.getList(x => x.EpisodeID == episodeID).List;
+            int order = 1;
+            if (contentLastOrderCount != null && contentLastOrderCount.Count != 0)
+            {
+                order = contentLastOrderCount.Last().ContentOrder + 1;
+            }
+            var response = new ServiceResponse<MangaEpisodeContent>();
+            for (int i = start; i <= end; i++)
+            {
+                mangaEpisodeContents.Add(mangaEpisodeContentService.add(new MangaEpisodeContent()
+                {
+                    Description = "Bölüm açıklamasını giriniz",
+                    ContentImage = "",
+                    EpisodeID = episodeID,
+                    ContentOrder = order++,
+                }).Entity);
+            }
+            response.List = mangaEpisodeContents;
+            response.Count = mangaEpisodeContents.Count;
+            response.IsSuccessful = true;
+            return Ok(response);
+        }
     }
 }
 

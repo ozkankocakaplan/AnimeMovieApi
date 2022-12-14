@@ -3,6 +3,7 @@ using System.Linq.Expressions;
 using AnimeMovie.Business.Abstract;
 using AnimeMovie.DataAccess.Abstract;
 using AnimeMovie.Entites;
+using Microsoft.EntityFrameworkCore;
 
 namespace AnimeMovie.Business.Concrete
 {
@@ -67,7 +68,7 @@ namespace AnimeMovie.Business.Concrete
             var response = new ServiceResponse<SocialMediaAccount>();
             try
             {
-                response.List = socialMediaAccountRepository.GetAll().ToList();
+                response.List = socialMediaAccountRepository.Table.Include(x => x.Users).ToList();
                 response.Count = socialMediaAccountRepository.Count();
                 response.IsSuccessful = true;
             }

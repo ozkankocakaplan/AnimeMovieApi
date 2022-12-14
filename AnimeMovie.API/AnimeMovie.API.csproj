@@ -11,6 +11,7 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.9" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.1.0" />
+    <PackageReference Include="Hangfire" Version="1.7.32" />
   </ItemGroup>
 
   <ItemGroup>
@@ -18,6 +19,9 @@
     <None Remove="Controllers\" />
     <None Remove="Microsoft.AspNetCore.SignalR" />
     <None Remove="Models\" />
+    <None Remove="Hangfire" />
+    <None Remove="Jobs\" />
+    <None Remove="Jobs\Recurring\" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Controllers\" />
@@ -27,6 +31,8 @@
     <Folder Include="wwwroot\manga\" />
     <Folder Include="wwwroot\fanart\" />
     <Folder Include="Models\" />
+    <Folder Include="Jobs\" />
+    <Folder Include="Jobs\Recurring\" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\AnimeMovie.Entites\AnimeMovie.Entites.csproj">
@@ -45,5 +51,6 @@
     <Content Remove="wwwroot\anime\" />
     <Content Remove="wwwroot\manga\" />
     <Content Remove="wwwroot\fanart\" />
+    <Content Remove="wwwroot\emailTemplate.txt" />
   </ItemGroup>
 </Project>

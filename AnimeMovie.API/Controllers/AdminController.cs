@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using AnimeMovie.API.Hubs;
+using AnimeMovie.API.Models;
+using AnimeMovie.Business;
 using AnimeMovie.Business.Abstract;
 using AnimeMovie.Entites;
 using Microsoft.AspNetCore.Mvc;
@@ -17,15 +20,34 @@ namespace AnimeMovie.API.Controllers
         private readonly ISiteDescriptionService siteDescriptionService;
         private readonly ISocialMediaAccountService socialMediaAccountService;
         private readonly IUsersService usersService;
+        private readonly IAnimeService animeService;
+        private readonly IMangaService mangaService;
+        private readonly IAnimeEpisodesService animeEpisodesService;
+        private readonly IMangaEpisodesService mangaEpisodesService;
+        private readonly IFanArtService fanArtService;
+        private readonly IReviewService reviewService;
+        private readonly ICommentsService commentsService;
+
         public AdminController(IAnnouncementService announcement,
             ISiteDescriptionService siteDescription,
             ISocialMediaAccountService socialMediaAccount,
-            IUsersService users)
+            IUsersService users,
+            ICommentsService comments,
+            IAnimeService anime,IMangaService manga,IAnimeEpisodesService animeEpisodes,
+            IMangaEpisodesService mangaEpisodes, IFanArtService fanArt,IReviewService review)
         {
+            commentsService = comments;
             usersService = users;
             announcementService = announcement;
             siteDescriptionService = siteDescription;
             socialMediaAccountService = socialMediaAccount;
+            animeService = anime;
+            mangaService = manga;
+            animeEpisodesService = animeEpisodes;
+            mangaEpisodesService = mangaEpisodes;
+            fanArtService = fanArt;
+            reviewService = review;
+
         }
         #region User
         [HttpGet]
@@ -135,6 +157,44 @@ namespace AnimeMovie.API.Controllers
             return BadRequest();
         }
         #endregion
+        [HttpGet]
+        [Route("/siteInfo")]
+        public IActionResult getSiteInfo()
+        {
+            var response = new ServiceResponse<SiteInfo>();
+            SiteInfo siteInfo = new SiteInfo();
+            siteInfo.AnimeCount = animeService.getList().Count;
+            siteInfo.AnimeEpisodeCount = animeEpisodesService.getList().Count;
+            siteInfo.AnimeFanArtCount = fanArtService.getList(x => x.Type == Entites.Type.Anime).Count;
+            siteInfo.AnimeReviewCount = reviewService.getList(x => x.Type == Entites.Type.Anime).Count;
+
+            siteInfo.MangaCount = mangaService.getList().Count;
+            siteInfo.MangaEpisodeCount = mangaEpisodesService.getList().Count;
+            siteInfo.MangaFanArtCount = fanArtService.getList(x => x.Type == Entites.Type.Manga).Count;
+            siteInfo.MangaReviewCount = reviewService.getList(x => x.Type == Entites.Type.Manga).Count;
+            siteInfo.PeopleCount = usersService.getList(x => x.RoleType != RoleType.Admin && x.RoleType != RoleType.Moderator).Count;
+            siteInfo.OnlinePeopleCount = Hubs.User.onlineUsers.Count;
+            response.Entity = siteInfo;
+            response.IsSuccessful = true;
+            return Ok(response);
+        }
+        [HttpDelete]
+        [Roles(Roles = RolesAttribute.All)]
+        [Route("/deleteAdminReview/{id}")]
+        public IActionResult deleteReview(int id)
+        {
+            var getReviewInfo = reviewService.get(x => x.ID == id).Entity;
+            if(getReviewInfo != null)
+            {
+                var comments = commentsService.getList(x => x.ContentID == getReviewInfo.ContentID && x.Type == Entites.Type.Reviews).List;
+                foreach (var comment in comments)
+                {
+                    commentsService.delete(x => x.ID == comment.ID);
+                }
+            }
+            var response = reviewService.delete(x => x.ID == id);
+            return Ok(response);
+        }
     }
 }
 

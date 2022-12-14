@@ -19,5 +19,6 @@
   </ImportGroup>
   <PropertyGroup Condition=" '$(ExcludeRestorePackageImports)' != 'true' ">
     <PkgMicrosoft_Extensions_ApiDescription_Server Condition=" '$(PkgMicrosoft_Extensions_ApiDescription_Server)' == '' ">/Users/ozkan/.nuget/packages/microsoft.extensions.apidescription.server/6.0.5</PkgMicrosoft_Extensions_ApiDescription_Server>
+    <PkgHangfire_SqlServer Condition=" '$(PkgHangfire_SqlServer)' == '' ">/Users/ozkan/.nuget/packages/hangfire.sqlserver/1.7.32</PkgHangfire_SqlServer>
   </PropertyGroup>
 </Project>

@@ -9,6 +9,7 @@ namespace AnimeMovie.API.Models
         public Manga Manga { get; set; }
         public Like Like { get; set; }
         public Ratings AnimeRating { get; set; }
+        public List<Comments> Comments { get; set; }
         public ContentNotification ContentNotification { get; set; }
         public List<CategoryType> Categories { get; set; }
         public List<AnimeSeason> AnimeSeasons { get; set; }

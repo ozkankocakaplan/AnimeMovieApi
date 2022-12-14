@@ -12,8 +12,8 @@ namespace AnimeMovie.Entites
         public string ShowTime { get; set; }
         public Status Status { get; set; }
         public VideoType VideoType { get; set; }
-        public string SiteRating { get; set; }
         public string SeoUrl { get; set; }
+        public string? fansub { get; set; }
     }
 }
 
